@@ -39,8 +39,8 @@ The Tc App is designed to be cloned, expanded, and fixed by anyone. It’s a pro
 
     Clone the repo:
 
-git clone https://github.com/WebSwiftSEO/tc-app.git
-cd tc-app
+git clone https://github.com/WebSwiftSEO/TC-Sharing-App.git
+cd TC-Sharing-App
 
 Run Locally:
 
@@ -59,7 +59,7 @@ Deploy on GitHub Pages:
 
         Go to Settings → Pages, select the main branch and / (root) directory.
         Your app will be live at:
-        https://WebSwiftSEO.github.io/tc-app/
+        https://WebSwiftSEO.github.io/TC-Sharing-App/
 
 🚀 Features for Users & Developers
 
