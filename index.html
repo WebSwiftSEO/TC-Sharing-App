@@ -39,36 +39,13 @@
         .hidden { display: none; }
         .token-spin { animation: spin 1s infinite linear; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Popup styling */
-        #iosPopup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-            border: 2px solid #00ffcc;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 15px rgba(0, 255, 204, 0.7);
-            z-index: 1000;
-        }
-        #iosPopup button { margin-top: 1rem; background-color: #00ffcc; color: #0d0d0d; }
     </style>
 </head>
 <body>
     <header>
-        <h1>Tc App 🚀</h1>
-        <button id="installBtn">📲 Install</button>
+        <h1>🚀</h1>
+        <button id="installBtn">📲</button>
     </header>
-
-    <div id="iosPopup">
-        <h3>Install on iPhone or iPad 📱</h3>
-        <p>To install this app, tap the Share icon <strong>(⬆️)</strong> in Safari and select <strong>'Add to Home Screen'</strong>.</p>
-        <button onclick="closeIOSPopup()">Close</button>
-    </div>
 
     <nav>
         <button id="homeFeed">🏠</button>
@@ -79,89 +56,73 @@
     </nav>
 
     <main id="feed">
-        <h2>Welcome to Tc App! 🌐✨</h2>
-        <p>Share links, connect, and earn Troanary Tokens 💸</p>
-        <input type="text" id="searchInput" placeholder="Search...">
+        <!-- Link Submission Form -->
+        <input type="text" id="linkInput" placeholder="Paste your link here...">
+        <button onclick="submitLink()">Submit Link</button>
+
+        <!-- Search Bar -->
+        <input type="text" id="searchInput" placeholder="Search links...">
         <button onclick="performSearch()">Search</button>
-        <div id="searchResults"></div>
-        <p>Your Balance: <span id="tokenBalance">0</span> 🪙</p>
+
+        <!-- Display Area -->
+        <div id="linksContainer"></div>
     </main>
 
     <footer>
-        <button id="giveBtn">❤️ Give</button>
-        <button id="receiveBtn">🤲 Receive</button>
-        <button id="thirdBtn">✨ T-Wheel</button>
+        <button id="giveBtn">❤️</button>
+        <button id="receiveBtn">🤲</button>
+        <button id="thirdBtn">✨</button>
     </footer>
 
     <script>
-        let deferredPrompt;
-        let tokenBalance = 0;
+        let links = [];
 
-        // PWA Install Logic
-        const installBtn = document.getElementById('installBtn');
-        const iosPopup = document.getElementById('iosPopup');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtn.style.display = 'block';
-
-            installBtn.addEventListener('click', () => {
-                if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
-                    iosPopup.style.display = 'block';
-                } else if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('PWA installed');
-                        }
-                        deferredPrompt = null;
+        // Share Functionality for Home Button
+        document.getElementById('homeFeed').addEventListener('click', async () => {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Tc App',
+                        text: 'Check out Tc App! 🚀',
+                        url: window.location.href
                     });
-                } else {
-                    alert('PWA install not supported on this device.');
+                } catch (err) {
+                    console.error('Error sharing:', err);
                 }
-            });
-        });
-
-        function closeIOSPopup() {
-            iosPopup.style.display = 'none';
-        }
-
-        // Search Logic (6-Keyword System)
-        function performSearch() {
-            const input = document.getElementById('searchInput').value;
-            const keywords = input.split(' ').slice(0, 6);
-            document.getElementById('searchResults').innerText = 'Searching for: ' + keywords.join(', ');
-        }
-
-        // Token Spin Reward System
-        function spinTWheel() {
-            const rewards = [5, 10, 15, 20, 25, 50, 100];
-            const reward = rewards[Math.floor(Math.random() * rewards.length)];
-            tokenBalance += reward;
-            document.getElementById('tokenBalance').innerText = tokenBalance;
-            alert(`🎉 You won ${reward} Troanary Tokens!`);
-        }
-
-        // Give/Receive Token Logic
-        document.getElementById('giveBtn').addEventListener('click', () => {
-            if (tokenBalance >= 10) {
-                tokenBalance -= 10;
-                document.getElementById('tokenBalance').innerText = tokenBalance;
-                alert('You gave 10 Troanary Tokens!');
             } else {
-                alert('Not enough tokens to give.');
+                alert('Native sharing is not supported on this device.');
             }
         });
 
-        document.getElementById('receiveBtn').addEventListener('click', () => {
-            tokenBalance += 10;
-            document.getElementById('tokenBalance').innerText = tokenBalance;
-            alert('You received 10 Troanary Tokens!');
-        });
+        // Submit Link Function
+        function submitLink() {
+            const linkInput = document.getElementById('linkInput').value;
+            if (linkInput.trim() !== '') {
+                links.push(linkInput);
+                displayLinks(links);
+                document.getElementById('linkInput').value = '';
+            } else {
+                alert('Please enter a valid link.');
+            }
+        }
 
-        // Connect T-Wheel Spin
-        document.getElementById('thirdBtn').addEventListener('click', spinTWheel);
+        // Display Links
+        function displayLinks(linkArray) {
+            const container = document.getElementById('linksContainer');
+            container.innerHTML = '';
+            linkArray.forEach(link => {
+                const linkElement = document.createElement('div');
+                linkElement.innerHTML = `<a href="${link}" target="_blank">${link}</a>`;
+                container.appendChild(linkElement);
+            });
+        }
+
+        // Search Function
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filteredLinks = links.filter(link => link.toLowerCase().includes(query));
+            displayLinks(filteredLinks);
+        }
     </script>
 </body>
 </html>
