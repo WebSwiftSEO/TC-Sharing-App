@@ -39,13 +39,36 @@
         .hidden { display: none; }
         .token-spin { animation: spin 1s infinite linear; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Popup styling */
+        #iosPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            border: 2px solid #00ffcc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 255, 204, 0.7);
+            z-index: 1000;
+        }
+        #iosPopup button { margin-top: 1rem; background-color: #00ffcc; color: #0d0d0d; }
     </style>
 </head>
 <body>
     <header>
         <h1>Tc App 🚀</h1>
-        <button id="installBtn">📲 Free Install</button>
+        <button id="installBtn">📲 Install</button>
     </header>
+
+    <div id="iosPopup">
+        <h3>Install on iPhone or iPad 📱</h3>
+        <p>To install this app, tap the Share icon <strong>(⬆️)</strong> in Safari and select <strong>'Add to Home Screen'</strong>.</p>
+        <button onclick="closeIOSPopup()">Close</button>
+    </div>
 
     <nav>
         <button id="homeFeed">🏠</button>
@@ -76,21 +99,33 @@
 
         // PWA Install Logic
         const installBtn = document.getElementById('installBtn');
+        const iosPopup = document.getElementById('iosPopup');
+
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             installBtn.style.display = 'block';
 
             installBtn.addEventListener('click', () => {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('PWA installed');
-                    }
-                    deferredPrompt = null;
-                });
+                if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
+                    iosPopup.style.display = 'block';
+                } else if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('PWA installed');
+                        }
+                        deferredPrompt = null;
+                    });
+                } else {
+                    alert('PWA install not supported on this device.');
+                }
             });
         });
+
+        function closeIOSPopup() {
+            iosPopup.style.display = 'none';
+        }
 
         // Search Logic (6-Keyword System)
         function performSearch() {
