@@ -11,11 +11,15 @@
         /* Embedded CSS for simplicity */
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f0f0; }
         header, footer { background-color: #222; color: white; text-align: center; padding: 1rem; }
-        nav { display: flex; justify-content: space-around; background-color: #444; padding: 0.5rem; }
-        nav button { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-        main { padding: 1rem; }
-        #feed { margin-top: 1rem; }
-        button { cursor: pointer; }
+        nav { display: flex; justify-content: center; gap: 2rem; background-color: #444; padding: 0.5rem; }
+        nav button { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; transition: transform 0.2s; }
+        nav button:hover { transform: scale(1.2); }
+        main { padding: 2rem; text-align: center; }
+        #feed { margin-top: 1rem; padding: 1rem; background-color: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+        input[type="text"] { width: 60%; padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
+        button { cursor: pointer; padding: 0.5rem 1rem; border-radius: 5px; border: none; background-color: #007bff; color: white; transition: background-color 0.3s; }
+        button:hover { background-color: #0056b3; }
+        footer { display: flex; justify-content: center; gap: 1rem; }
         .hidden { display: none; }
         .token-spin { animation: spin 1s infinite linear; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -36,7 +40,8 @@
     </nav>
 
     <main id="feed">
-        <p>Welcome to Tc App! 🌐✨ Share links, connect, and earn Troanary Tokens 💸</p>
+        <h2>Welcome to Tc App! 🌐✨</h2>
+        <p>Share links, connect, and earn Troanary Tokens 💸</p>
         <input type="text" id="searchInput" placeholder="Search...">
         <button onclick="performSearch()">Search</button>
         <div id="searchResults"></div>
