@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Tc App - Decentralized Social and Crypto Platform">
+    <meta name="keywords" content="Tc App, Troanary, Mirror Thesis, Crypto, Social Media, Blockchain, Troanary Coin">
+    <title>Tc App - Troanary Connection</title>
+    <style>
+        /* Embedded CSS for simplicity */
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f0f0; }
+        header, footer { background-color: #222; color: white; text-align: center; padding: 1rem; }
+        nav { display: flex; justify-content: space-around; background-color: #444; padding: 0.5rem; }
+        nav button { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        main { padding: 1rem; }
+        #feed { margin-top: 1rem; }
+        button { cursor: pointer; }
+        .hidden { display: none; }
+        .token-spin { animation: spin 1s infinite linear; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Tc App 🚀</h1>
+        <button id="installBtn">📲 Free Install</button>
+    </header>
+
+    <nav>
+        <button id="homeFeed">🏠</button>
+        <button id="searchBtn">🔍</button>
+        <button id="trendingFeed">📊</button>
+        <button id="groupsFeed">🏘️</button>
+        <button id="comedyFeed">😂</button>
+    </nav>
+
+    <main id="feed">
+        <p>Welcome to Tc App! 🌐✨ Share links, connect, and earn Troanary Tokens 💸</p>
+        <input type="text" id="searchInput" placeholder="Search...">
+        <button onclick="performSearch()">Search</button>
+        <div id="searchResults"></div>
+    </main>
+
+    <footer>
+        <button id="giveBtn">❤️</button>
+        <button id="receiveBtn">🤲</button>
+        <button id="thirdBtn">✨</button>
+    </footer>
+
+    <script>
+        // PWA Install Logic
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+
+            installBtn.addEventListener('click', () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('PWA installed');
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        });
+
+        // Search Logic (6-Keyword System)
+        function performSearch() {
+            const input = document.getElementById('searchInput').value;
+            const keywords = input.split(' ').slice(0, 6);
+            document.getElementById('searchResults').innerText = 'Searching for: ' + keywords.join(', ');
+        }
+
+        // Token Spin Reward System
+        function spinTWheel() {
+            const rewards = [5, 10, 15, 20, 25, 50, 100];
+            const reward = rewards[Math.floor(Math.random() * rewards.length)];
+            alert(`🎉 You won ${reward} Troanary Tokens!`);
+        }
+
+        // Example Button Hookup
+        document.getElementById('thirdBtn').addEventListener('click', spinTWheel);
+    </script>
+</body>
+</html>
