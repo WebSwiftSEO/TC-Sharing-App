@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link rel="manifest" href="./manifest.json">
     <style>
+        /* Existing styles remain unchanged */
         body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #0d0d0d; color: #e0e0e0; overflow-x: hidden; }
         header { background-color: #1a1a1a; color: #fff; text-align: center; padding: 1rem; border-bottom: 2px solid #00ffcc; position: relative; }
         header h1 { animation: pulse 2s infinite alternate; font-size: 2rem; margin: 0; }
@@ -21,17 +22,19 @@
         main { padding: 1rem; text-align: center; }
         #feed { margin-top: 1rem; padding: 1rem; background-color: #1a1a1a; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 255, 204, 0.5); }
         #globeContainer { width: 100%; max-width: 300px; height: 300px; margin: 0 auto; }
-        input[type="text"], input[type="number"] { width: 80%; max-width: 300px; padding: 0.5rem; border-radius: 5px; border: 1px solid #00ffcc; background-color: #333; color: #e0e0e0; margin: 0.5rem 0; }
+        input[type="text"], input[type="number"], input[type="password"] { width: 80%; max-width: 300px; padding: 0.5rem; border-radius: 5px; border: 1px solid #00ffcc; background-color: #333; color: #e0e0e0; margin: 0.5rem 0; }
         button { cursor: pointer; padding: 0.5rem 1rem; border-radius: 5px; border: none; background-color: #00ffcc; color: #0d0d0d; transition: background-color 0.3s, transform 0.2s; }
         button:hover { background-color: #ffd700; transform: scale(1.1); }
         .link-item { margin: 0.5rem 0; padding: 0.5rem; background: #222; border-radius: 5px; display: flex; flex-direction: column; align-items: flex-start; }
         .link-item a { color: #00ffcc; text-decoration: none; word-break: break-all; }
         .link-item img { max-width: 100%; max-height: 200px; margin-top: 0.5rem; border-radius: 5px; }
         .link-item button { margin-top: 0.5rem; padding: 0.3rem 0.6rem; font-size: 0.9rem; }
-        #loginScreen, #mainScreen { transition: opacity 0.3s; }
-        #loginScreen.hidden, #mainScreen.hidden { display: none; opacity: 0; }
+        #authScreen, #mainScreen { transition: opacity 0.3s; }
+        #authScreen.hidden, #mainScreen.hidden { display: none; opacity: 0; }
         #friendsList { margin-top: 1rem; }
         .friend-item { display: flex; justify-content: space-between; padding: 0.5rem; background: #222; border-radius: 5px; margin: 0.5rem 0; }
+        .auth-toggle { color: #00ffcc; cursor: pointer; margin-top: 0.5rem; }
+        .auth-toggle:hover { color: #ffd700; }
     </style>
 </head>
 <body>
@@ -44,10 +47,21 @@
         </div>
     </header>
 
-    <main id="loginScreen" class="hidden">
-        <h2>Login</h2>
-        <input type="text" id="usernameInput" placeholder="Username">
-        <button onclick="login()">Login</button>
+    <main id="authScreen">
+        <div id="loginForm">
+            <h2>Login</h2>
+            <input type="text" id="loginUsername" placeholder="Username">
+            <input type="password" id="loginPassword" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <div class="auth-toggle" onclick="showSignup()">Need an account? Sign up</div>
+        </div>
+        <div id="signupForm" style="display: none;">
+            <h2>Sign Up</h2>
+            <input type="text" id="signupUsername" placeholder="Username">
+            <input type="password" id="signupPassword" placeholder="Password">
+            <button onclick="signup()">Sign Up</button>
+            <div class="auth-toggle" onclick="showLogin()">Already have an account? Login</div>
+        </div>
     </main>
 
     <main id="mainScreen" class="hidden">
@@ -69,7 +83,7 @@
 
     <script>
         let currentUser = null;
-        let users = [];
+        let users = []; // Now stores {name, password, tokens, active, friends}
         let links = [];
         let tokenCap = 1000;
 
@@ -92,28 +106,73 @@
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         });
 
-        // Login
-        function login() {
-            const username = document.getElementById('usernameInput').value.trim();
-            if (!username) return alert('Enter a username!');
-            currentUser = users.find(u => u.name === username);
-            if (!currentUser) {
-                currentUser = { name: username, tokens: 0, active: true, friends: [] };
-                users.push(currentUser);
-            }
-            document.getElementById('loginScreen').classList.add('hidden');
+        // Toggle between login and signup forms
+        function showSignup() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+        }
+
+        // Signup
+        function signup() {
+            const username = document.getElementById('signupUsername').value.trim();
+            const password = document.getElementById('signupPassword').value.trim();
+            
+            if (!username || !password) return alert('Please enter both username and password!');
+            if (users.find(u => u.name === username)) return alert('Username already exists!');
+            
+            currentUser = { 
+                name: username, 
+                password: password, 
+                tokens: 0, 
+                active: true, 
+                friends: [] 
+            };
+            users.push(currentUser);
+            
+            document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('mainScreen').classList.remove('hidden');
             updateTokenStats();
             displayPersonalizedFeed();
             displayFriends();
+            
+            // Clear inputs
+            document.getElementById('signupUsername').value = '';
+            document.getElementById('signupPassword').value = '';
+        }
+
+        // Login
+        function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            if (!username || !password) return alert('Please enter both username and password!');
+            
+            currentUser = users.find(u => u.name === username && u.password === password);
+            if (!currentUser) return alert('Invalid username or password!');
+            
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainScreen').classList.remove('hidden');
+            updateTokenStats();
+            displayPersonalizedFeed();
+            displayFriends();
+            
+            // Clear inputs
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
         }
 
         // Logout
         function logout() {
             currentUser = null;
             document.getElementById('mainScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('authScreen').classList.remove('hidden');
             document.getElementById('menu').style.display = 'none';
+            showLogin(); // Default to login form on logout
         }
 
         // Show Install Prompt
@@ -127,17 +186,15 @@
             }
         }
 
-        // Submit Link with Troanary Coin Reward
+        // Rest of your existing functions remain largely unchanged
         async function submitLink() {
             const linkInput = document.getElementById('linkInput').value.trim();
             if (!linkInput) return alert('Enter a link!');
             
-            // Spin globe and calculate random reward based on "link quality"
             spinGlobe();
             const reward = await calculateLinkReward(linkInput);
             currentUser.tokens += reward;
             
-            // Fetch link metadata for featured image
             const metadata = await fetchLinkMetadata(linkInput);
             links.push({ url: linkInput, shares: 0, owner: currentUser.name, image: metadata.image });
             updateTokenStats();
@@ -146,21 +203,16 @@
             adjustTokenCap();
         }
 
-        // Calculate random reward based on link "quality"
         async function calculateLinkReward(url) {
-            // Simple quality heuristic: length of URL + random factor
             const baseReward = Math.min(10, Math.floor(url.length / 10));
             const randomBonus = Math.floor(Math.random() * 5);
             return baseReward + randomBonus;
         }
 
-        // Fetch link metadata (simplified for demo)
         async function fetchLinkMetadata(url) {
-            // In a real app, this would use an API to fetch Open Graph data
             return { image: url.includes('image') ? 'https://via.placeholder.com/150' : null };
         }
 
-        // Gift Tokens (online)
         function giftTokens() {
             const recipientName = document.getElementById('giftUser').value.trim();
             const amount = parseInt(document.getElementById('giftAmount').value);
@@ -168,7 +220,7 @@
             if (currentUser.tokens < amount) return alert('Not enough tokens!');
             let recipient = users.find(u => u.name === recipientName);
             if (!recipient) {
-                recipient = { name: recipientName, tokens: 0, active: true, friends: [] };
+                recipient = { name: recipientName, password: '', tokens: 0, active: true, friends: [] };
                 users.push(recipient);
             }
             currentUser.tokens -= amount;
@@ -179,7 +231,6 @@
             adjustTokenCap();
         }
 
-        // Gift Tokens via Bluetooth (placeholder)
         function giftTokensBluetooth() {
             const recipientName = document.getElementById('giftUser').value.trim();
             const amount = parseInt(document.getElementById('giftAmount').value);
@@ -187,16 +238,14 @@
             if (currentUser.tokens < amount) return alert('Not enough tokens!');
             if (!navigator.bluetooth) return alert('Bluetooth not supported in this browser!');
             alert(`Simulating Bluetooth transfer of ${amount} Troanary Coins to ${recipientName}`);
-            // Real Bluetooth implementation would use Web Bluetooth API
         }
 
-        // Add Friend
         function addFriend() {
             const friendName = document.getElementById('friendInput').value.trim();
             if (!friendName || friendName === currentUser.name) return alert('Enter a valid friend username!');
             let friend = users.find(u => u.name === friendName);
             if (!friend) {
-                friend = { name: friendName, tokens: 0, active: true, friends: [] };
+                friend = { name: friendName, password: '', tokens: 0, active: true, friends: [] };
                 users.push(friend);
             }
             if (!currentUser.friends.includes(friendName)) {
@@ -206,7 +255,6 @@
             document.getElementById('friendInput').value = '';
         }
 
-        // Share Link
         function shareLink(index) {
             currentUser.tokens += 2;
             links[index].shares += 1;
@@ -214,14 +262,13 @@
             displayPersonalizedFeed();
         }
 
-        // Display Personalized Feed
         function displayPersonalizedFeed() {
             const container = document.getElementById('linksContainer');
             container.innerHTML = '';
             const relevantLinks = links.filter(link => 
                 link.owner === currentUser.name || 
                 currentUser.friends.includes(link.owner) || 
-                link.owner.includes(currentUser.name.substring(0, 3)) // Simple name-based relevance
+                link.owner.includes(currentUser.name.substring(0, 3))
             );
             relevantLinks.forEach((link, index) => {
                 const linkElement = document.createElement('div');
@@ -236,7 +283,6 @@
             });
         }
 
-        // Display Friends
         function displayFriends() {
             const container = document.getElementById('friendsList');
             container.innerHTML = '<h3>Friends</h3>';
@@ -249,7 +295,6 @@
             });
         }
 
-        // Update Token Stats
         function updateTokenStats() {
             const activeUsers = users.filter(u => u.active).length;
             document.getElementById('userTokens').textContent = currentUser ? currentUser.tokens : 0;
@@ -257,7 +302,6 @@
             document.getElementById('tokenCap').textContent = tokenCap;
         }
 
-        // Adjust Token Cap
         function adjustTokenCap() {
             const activeUsers = users.filter(u => u.active).length;
             const activityFactor = links.length + users.reduce((sum, u) => sum + u.tokens, 0);
@@ -265,7 +309,7 @@
             updateTokenStats();
         }
 
-        // Three.js Globe with Spin Animation
+        // Three.js Globe
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -292,9 +336,6 @@
                 if (speed < 0.01) clearInterval(spinInterval);
             }, 16);
         }
-
-        // Show login screen initially
-        document.getElementById('loginScreen').classList.remove('hidden');
     </script>
 </body>
 </html>
