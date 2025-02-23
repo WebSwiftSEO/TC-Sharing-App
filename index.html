@@ -10,7 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link rel="manifest" href="./manifest.json">
     <style>
-        /* Existing styles remain unchanged */
         body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #0d0d0d; color: #e0e0e0; overflow-x: hidden; }
         header { background-color: #1a1a1a; color: #fff; text-align: center; padding: 1rem; border-bottom: 2px solid #00ffcc; position: relative; }
         header h1 { animation: pulse 2s infinite alternate; font-size: 2rem; margin: 0; }
@@ -83,7 +82,7 @@
 
     <script>
         let currentUser = null;
-        let users = []; // Now stores {name, password, tokens, active, friends}
+        let users = [];
         let links = [];
         let tokenCap = 1000;
 
@@ -106,7 +105,6 @@
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         });
 
-        // Toggle between login and signup forms
         function showSignup() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('signupForm').style.display = 'block';
@@ -117,65 +115,45 @@
             document.getElementById('signupForm').style.display = 'none';
         }
 
-        // Signup
         function signup() {
             const username = document.getElementById('signupUsername').value.trim();
             const password = document.getElementById('signupPassword').value.trim();
-            
             if (!username || !password) return alert('Please enter both username and password!');
             if (users.find(u => u.name === username)) return alert('Username already exists!');
-            
-            currentUser = { 
-                name: username, 
-                password: password, 
-                tokens: 0, 
-                active: true, 
-                friends: [] 
-            };
+            currentUser = { name: username, password: password, tokens: 0, active: true, friends: [] };
             users.push(currentUser);
-            
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('mainScreen').classList.remove('hidden');
             updateTokenStats();
             displayPersonalizedFeed();
             displayFriends();
-            
-            // Clear inputs
             document.getElementById('signupUsername').value = '';
             document.getElementById('signupPassword').value = '';
         }
 
-        // Login
         function login() {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
-            
             if (!username || !password) return alert('Please enter both username and password!');
-            
             currentUser = users.find(u => u.name === username && u.password === password);
             if (!currentUser) return alert('Invalid username or password!');
-            
             document.getElementById('authScreen').classList.add('hidden');
             document.getElementById('mainScreen').classList.remove('hidden');
             updateTokenStats();
             displayPersonalizedFeed();
             displayFriends();
-            
-            // Clear inputs
             document.getElementById('loginUsername').value = '';
             document.getElementById('loginPassword').value = '';
         }
 
-        // Logout
         function logout() {
             currentUser = null;
             document.getElementById('mainScreen').classList.add('hidden');
             document.getElementById('authScreen').classList.remove('hidden');
             document.getElementById('menu').style.display = 'none';
-            showLogin(); // Default to login form on logout
+            showLogin();
         }
 
-        // Show Install Prompt
         function showInstall() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
@@ -186,7 +164,7 @@
             }
         }
 
-        // Rest of your existing functions remain largely unchanged
+        // Updated submitLink function
         async function submitLink() {
             const linkInput = document.getElementById('linkInput').value.trim();
             if (!linkInput) return alert('Enter a link!');
@@ -196,7 +174,17 @@
             currentUser.tokens += reward;
             
             const metadata = await fetchLinkMetadata(linkInput);
-            links.push({ url: linkInput, shares: 0, owner: currentUser.name, image: metadata.image });
+            // Store both URL and anchor text (if available)
+            const linkText = metadata.title || linkInput.split('/').pop() || 'Shared Link';
+            links.unshift({ 
+                url: linkInput, 
+                text: linkText, 
+                shares: 0, 
+                owner: currentUser.name, 
+                image: metadata.image,
+                timestamp: Date.now() 
+            }); // Add to beginning of array for newest first
+            
             updateTokenStats();
             displayPersonalizedFeed();
             document.getElementById('linkInput').value = '';
@@ -209,8 +197,13 @@
             return baseReward + randomBonus;
         }
 
+        // Enhanced metadata fetch with title
         async function fetchLinkMetadata(url) {
-            return { image: url.includes('image') ? 'https://via.placeholder.com/150' : null };
+            // Simulated metadata - in production, use an API
+            return { 
+                image: url.includes('image') ? 'https://via.placeholder.com/150' : null,
+                title: url.includes('example') ? 'Example Page' : null 
+            };
         }
 
         function giftTokens() {
@@ -262,21 +255,32 @@
             displayPersonalizedFeed();
         }
 
+        // Updated feed display function
         function displayPersonalizedFeed() {
             const container = document.getElementById('linksContainer');
             container.innerHTML = '';
-            const relevantLinks = links.filter(link => 
+            
+            // Sort links by timestamp (newest first)
+            const sortedLinks = links.slice().sort((a, b) => b.timestamp - a.timestamp);
+            
+            const relevantLinks = sortedLinks.filter(link => 
                 link.owner === currentUser.name || 
                 currentUser.friends.includes(link.owner) || 
                 link.owner.includes(currentUser.name.substring(0, 3))
             );
+            
             relevantLinks.forEach((link, index) => {
                 const linkElement = document.createElement('div');
                 linkElement.className = 'link-item';
+                
+                // Display either image or anchor text
+                const content = link.image 
+                    ? `<img src="${link.image}" alt="Featured Image">`
+                    : `<a href="${link.url}" target="_blank">${link.text}</a>`;
+                
                 linkElement.innerHTML = `
-                    <a href="${link.url}" target="_blank">${link.url}</a>
-                    ${link.image ? `<img src="${link.image}" alt="Featured Image">` : ''}
-                    <button onclick="shareLink(${index})">Share (+2)</button>
+                    ${content}
+                    <button onclick="shareLink(${links.indexOf(link)})">Share (+2)</button>
                     <span>Shares: ${link.shares} | By: ${link.owner}</span>
                 `;
                 container.appendChild(linkElement);
@@ -309,7 +313,6 @@
             updateTokenStats();
         }
 
-        // Three.js Globe
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
