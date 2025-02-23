@@ -7,6 +7,17 @@
     <meta name="description" content="Tc App - Decentralized Social and Crypto Platform">
     <meta name="keywords" content="Tc App, Troanary, Mirror Thesis, Crypto, Social Media, Blockchain, Troanary Coin">
     <title>Tc App - Troanary Connection</title>
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js').then(
+                    (reg) => console.log('Service worker registered.', reg),
+                    (err) => console.error('Service worker registration failed:', err)
+                );
+            });
+        }
+    </script>
     <style>
         /* Embedded CSS for futuristic design */
         body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #0d0d0d; color: #e0e0e0; overflow-x: hidden; }
@@ -50,19 +61,21 @@
         <input type="text" id="searchInput" placeholder="Search...">
         <button onclick="performSearch()">Search</button>
         <div id="searchResults"></div>
+        <p>Your Balance: <span id="tokenBalance">0</span> 🪙</p>
     </main>
 
     <footer>
-        <button id="giveBtn">❤️</button>
-        <button id="receiveBtn">🤲</button>
-        <button id="thirdBtn">✨</button>
+        <button id="giveBtn">❤️ Give</button>
+        <button id="receiveBtn">🤲 Receive</button>
+        <button id="thirdBtn">✨ T-Wheel</button>
     </footer>
 
     <script>
-        // PWA Install Logic
         let deferredPrompt;
-        const installBtn = document.getElementById('installBtn');
+        let tokenBalance = 0;
 
+        // PWA Install Logic
+        const installBtn = document.getElementById('installBtn');
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -90,10 +103,29 @@
         function spinTWheel() {
             const rewards = [5, 10, 15, 20, 25, 50, 100];
             const reward = rewards[Math.floor(Math.random() * rewards.length)];
+            tokenBalance += reward;
+            document.getElementById('tokenBalance').innerText = tokenBalance;
             alert(`🎉 You won ${reward} Troanary Tokens!`);
         }
 
-        // Example Button Hookup
+        // Give/Receive Token Logic
+        document.getElementById('giveBtn').addEventListener('click', () => {
+            if (tokenBalance >= 10) {
+                tokenBalance -= 10;
+                document.getElementById('tokenBalance').innerText = tokenBalance;
+                alert('You gave 10 Troanary Tokens!');
+            } else {
+                alert('Not enough tokens to give.');
+            }
+        });
+
+        document.getElementById('receiveBtn').addEventListener('click', () => {
+            tokenBalance += 10;
+            document.getElementById('tokenBalance').innerText = tokenBalance;
+            alert('You received 10 Troanary Tokens!');
+        });
+
+        // Connect T-Wheel Spin
         document.getElementById('thirdBtn').addEventListener('click', spinTWheel);
     </script>
 </body>
