@@ -7,11 +7,11 @@
     <meta name="description" content="Tc App - Decentralized Social and Crypto Platform">
     <meta name="keywords" content="Tc App, Troanary, Mirror Thesis, Crypto, Social Media, Blockchain, Troanary Coin">
     <title>Tc App - Troanary Connection</title>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js').then(
+                navigator.serviceWorker.register('./service-worker.js').then(
                     (reg) => console.log('Service worker registered.', reg),
                     (err) => console.error('Service worker registration failed:', err)
                 );
@@ -94,9 +94,9 @@
     <script>
         let links = [];
 
-        // Service Worker for PWA
+        // Service Worker for PWA with relative path
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js');
+            navigator.serviceWorker.register('./service-worker.js');
         }
 
         // Popup Functions
