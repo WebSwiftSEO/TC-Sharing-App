@@ -19,52 +19,69 @@
         }
     </script>
     <style>
-        /* Embedded CSS for futuristic design */
+        /* Embedded CSS for enhanced design */
         body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #0d0d0d; color: #e0e0e0; overflow-x: hidden; }
         header, footer { background-color: #1a1a1a; color: #fff; text-align: center; padding: 1rem; border-bottom: 2px solid #00ffcc; }
-        header h1 { animation: pulse 2s infinite alternate; }
-        @keyframes pulse {
-            from { color: #00ffcc; }
-            to { color: #ffd700; }
-        }
-        nav { display: flex; justify-content: center; gap: 2rem; background-color: #222; padding: 0.5rem; border-bottom: 2px solid #00ffcc; }
+        header h1 { animation: pulse 2s infinite alternate; font-size: 2.5rem; }
+        @keyframes pulse { from { color: #00ffcc; } to { color: #ffd700; } }
+        nav { display: flex; justify-content: space-between; align-items: center; background-color: #222; padding: 0.5rem; border-bottom: 2px solid #00ffcc; }
         nav button { background: none; border: none; color: #00ffcc; font-size: 1.5rem; cursor: pointer; transition: transform 0.2s, color 0.3s; }
         nav button:hover { transform: scale(1.2); color: #ffd700; }
         main { padding: 2rem; text-align: center; }
         #feed { margin-top: 1rem; padding: 1rem; background-color: #1a1a1a; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 255, 204, 0.5); color: #e0e0e0; }
-        input[type="text"] { width: 60%; padding: 0.5rem; border-radius: 5px; border: 1px solid #00ffcc; background-color: #333; color: #e0e0e0; }
+        input[type="text"] { width: 60%; padding: 0.5rem; border-radius: 5px; border: 1px solid #00ffcc; background-color: #333; color: #e0e0e0; margin-bottom: 1rem; }
         button { cursor: pointer; padding: 0.5rem 1rem; border-radius: 5px; border: none; background-color: #00ffcc; color: #0d0d0d; transition: background-color 0.3s, transform 0.2s; }
         button:hover { background-color: #ffd700; transform: scale(1.1); }
         footer { display: flex; justify-content: center; gap: 1rem; border-top: 2px solid #00ffcc; }
         .hidden { display: none; }
         .token-spin { animation: spin 1s infinite linear; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        /* Sidebar and Info Box */
+        #infoButton, #menuButton { position: fixed; top: 10px; width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.5rem; }
+        #infoButton { left: 10px; background-color: #00ffcc; color: #0d0d0d; }
+        #menuButton { right: 10px; background-color: #ffd700; color: #0d0d0d; }
+        #infoPopup, #menuPopup { display: none; position: fixed; top: 60px; width: 300px; background-color: #1a1a1a; color: #e0e0e0; border: 2px solid #00ffcc; border-radius: 8px; padding: 1rem; z-index: 10; }
+        #infoPopup { left: 10px; }
+        #menuPopup { right: 10px; }
+        #infoPopup h3, #menuPopup h3 { margin-top: 0; }
+        .popup-close { cursor: pointer; color: #ffd700; float: right; }
     </style>
 </head>
 <body>
     <header>
-        <h1>🚀</h1>
+        <h1>🚀 Tc App</h1>
         <button id="installBtn">📲</button>
     </header>
 
-    <nav>
-        <button id="homeFeed">🏠</button>
-        <button id="searchBtn">🔍</button>
-        <button id="trendingFeed">📊</button>
-        <button id="groupsFeed">🏘️</button>
-        <button id="comedyFeed">😂</button>
-    </nav>
+    <button id="infoButton">ℹ️</button>
+    <button id="menuButton">☰</button>
+
+    <div id="infoPopup">
+        <span class="popup-close" onclick="togglePopup('infoPopup')">❌</span>
+        <h3>About Tc App</h3>
+        <p>Tc App - A decentralized social & crypto platform where users can share, connect, and earn Troanary Tokens. Designed for authentic connections and a simplified experience.</p>
+    </div>
+
+    <div id="menuPopup">
+        <span class="popup-close" onclick="togglePopup('menuPopup')">❌</span>
+        <h3>Menu</h3>
+        <ul>
+            <li><button onclick="navigateTo('home')">🏠 Home</button></li>
+            <li><button onclick="navigateTo('trending')">📊 Trending</button></li>
+            <li><button onclick="navigateTo('groups')">🏘️ Groups</button></li>
+            <li><button onclick="navigateTo('comedy')">😂 Comedy</button></li>
+            <li><button onclick="navigateTo('tokens')">💸 Tokens</button></li>
+            <li><button onclick="navigateTo('settings')">⚙️ Settings</button></li>
+        </ul>
+    </div>
 
     <main id="feed">
-        <!-- Link Submission Form -->
         <input type="text" id="linkInput" placeholder="Paste your link here...">
         <button onclick="submitLink()">Submit Link</button>
 
-        <!-- Search Bar -->
         <input type="text" id="searchInput" placeholder="Search links...">
         <button onclick="performSearch()">Search</button>
 
-        <!-- Display Area -->
         <div id="linksContainer"></div>
     </main>
 
@@ -77,27 +94,21 @@
     <script>
         let links = [];
 
-        // Share Functionality for Home Button
-        document.getElementById('homeFeed').addEventListener('click', async () => {
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Tc App',
-                        text: 'Check out Tc App! 🚀',
-                        url: window.location.href
-                    });
-                } catch (err) {
-                    console.error('Error sharing:', err);
-                }
-            } else {
-                alert('Native sharing is not supported on this device.');
-            }
-        });
+        // Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js');
+        }
 
-        // Submit Link Function
+        // Popup Functions
+        function togglePopup(id) {
+            const popup = document.getElementById(id);
+            popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Submit Link
         function submitLink() {
             const linkInput = document.getElementById('linkInput').value;
-            if (linkInput.trim() !== '') {
+            if (linkInput.trim()) {
                 links.push(linkInput);
                 displayLinks(links);
                 document.getElementById('linkInput').value = '';
@@ -122,6 +133,11 @@
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filteredLinks = links.filter(link => link.toLowerCase().includes(query));
             displayLinks(filteredLinks);
+        }
+
+        // Navigation Simulation
+        function navigateTo(page) {
+            alert(`Navigating to ${page}`);
         }
     </script>
 </body>
