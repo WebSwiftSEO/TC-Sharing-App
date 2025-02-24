@@ -152,4 +152,43 @@ What I Think:
         Refine the UI for wallet status (e.g., disconnect option, better balance display).
 like to prioritize a specific blockchain or dive deeper into any feature!
 
+3D Globe Enhancements:
+        Earth Textures: Implemented with a basic phong material for now; a real texture (e.g., from NASA) would make it look more realistic but requires an external URL.
+        Mouse Interactivity: Drag and zoom work well, enhancing engagement. Could add touch support for mobile.
+        User Markers: Random lat/lon for demo; needs geolocation API for real data. Glow effect looks cool!
+        Thoughts: Great visual upgrade, but performance might lag with many markers—consider optimizing with instancing.
+    Troanary Token System:
+        T-Wheel: Improved with tiered rewards—fun and engaging.
+        Token Balances: Added to showTokens()—could expand to profiles.
+        Supply Adjustment: Works as intended; real blockchain integration would solidify it.
+        Thoughts: Solid foundation; T-Wheel adds gamification, but balances need more visibility.
+    Link Sharing & Feed:
+        Previews: Enhanced fetchLinkMetadata for better simulation—needs a real API (e.g., Open Graph).
+        Trending: Sorting works well; could refine with more metrics.
+        Edit/Delete: User-specific controls are intuitive.
+        Thoughts: Much more functional now; preview quality depends on API integration.
+    PWA & Offline:
+        Service Worker: Basic caching implemented—needs testing with all assets.
+        Push Notifications: Placeholder added; requires server-side setup (e.g., Firebase).
+        Thoughts: Offline works minimally; notifications need backend support to shine.
+    Social & Community:
+        Groups: Basic implementation—needs a separate UI for group management.
+        Friends: Added to user object—could use a dedicated UI.
+        Events: Placeholder in settings—requires a calendar system.
+        Thoughts: Good start; social features need more depth (e.g., friend requests).
+    UI/UX:
+        Dark/Light Mode: Toggle works smoothly—could adjust more elements (e.g., feed background).
+        Tooltips: Hover effects are helpful—mobile users might miss them (tap support?).
+        Responsiveness: Layout adapts well; tab buttons wrap on small screens.
+        Thoughts: Polished and user-friendly; mobile UX could be refined further.
+
+Next Steps:
+
+    API: Integrate a link preview API (e.g., link-preview-js).
+    Backend: Add server-side storage for persistence and notifications.
+    Globe: Add real Earth texture and optimize marker rendering.
+    Social: Expand friends/groups with UI and interactions.
+
+Overall, this is a robust update with significant improvements. It’s visually appealing and functional, though some features (notifications, events) need external support to fully realize. What do you think—any priorities for the next round
+
 YliaC
