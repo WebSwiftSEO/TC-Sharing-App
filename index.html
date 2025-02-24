@@ -72,7 +72,7 @@
             z-index: 100; 
             max-width: 90vw; 
         }
-        #menu button, #menu a { 
+        #menu button { 
             display: block; 
             width: 100%; 
             text-align: left; 
@@ -81,10 +81,9 @@
             color: #00ffcc; 
             padding: 0.5rem; 
             cursor: pointer; 
-            text-decoration: none; 
             font-size: clamp(0.9rem, 2.5vw, 1rem); 
         }
-        #menu button:hover, #menu a:hover { 
+        #menu button:hover { 
             color: #ffd700; 
         }
         main { 
@@ -109,8 +108,8 @@
         }
         #globeContainer { 
             width: 100%; 
-            max-width: 150px; /* Halved from 300px */
-            height: 150px; /* Halved from 300px */
+            max-width: 300px; 
+            height: 300px; 
             margin: 0 auto; 
         }
         #linkInputContainer {
@@ -400,42 +399,49 @@
             margin-right: 0.5rem;
             object-fit: cover;
         }
-        #animationContainer {
+        #bottomAnimation {
             width: 100%;
-            max-width: 300px; /* Halved from 600px */
-            height: clamp(100px, 20vw, 150px); /* Halved height from 300px */
+            max-width: 600px;
+            height: clamp(100px, 20vw, 150px);
             margin: 2rem auto;
             position: relative;
             z-index: 1;
+            overflow: hidden;
         }
-        .particle {
+        .neon-grid {
             position: absolute;
-            width: 5px;
-            height: 5px;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 255, 204, 0.1), rgba(255, 215, 0, 0.1));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .neon-grid::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
             background: #00ffcc;
+            animation: neonPulse 2s infinite alternate, gridMove 4s infinite linear;
+            box-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc;
             border-radius: 50%;
-            animation: particleMove 5s infinite linear;
-            opacity: 0.8;
         }
-        @keyframes particleMove {
-            0% { transform: translate(0, 0); opacity: 0.8; }
-            100% { transform: translate(100%, 100%) rotate(360deg); opacity: 0; }
+        @keyframes neonPulse {
+            from { box-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc, 0 0 15px #00ffcc; }
+            to { box-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc; }
         }
-        @keyframes orbit {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(100%, 100%) rotate(360deg); }
         }
         @media (max-width: 600px) {
             #linkInputContainer { flex-direction: column; }
             input[type="text"], input[type="number"], input[type="password"] { width: 100%; max-width: none; }
             button { width: 100%; max-width: 300px; }
             .feed { padding: 0.5rem; }
-            #globeContainer { max-width: 150px; height: 150px; } /* Reduced for mobile */
-            #animationContainer { max-width: 150px; height: clamp(50px, 15vw, 75px); } /* Reduced for mobile */
+            #globeContainer { max-width: 200px; height: 200px; }
+            #bottomAnimation { max-width: 100%; height: clamp(80px, 15vw, 100px); }
             .profile-pic { width: 40px; height: 40px; }
         }
     </style>
@@ -453,45 +459,12 @@
             <button onclick="showFeed('family')">Family</button>
             <button onclick="showTokens()">Tokens</button>
             <button onclick="showSettings()">Settings</button>
-            <a href="#" onclick="showLoginForm(); return false;" data-tooltip="Sign in to your account">Login</a>
-            <a href="#" onclick="showSignupForm(); return false;" data-tooltip="Create a new account">Sign Up</a>
             <button onclick="installPWA()" data-tooltip="Install Tc App">Install</button>
-            <button onclick="logout()" data-tooltip="Sign out of your account">Logout</button>
+            <button onclick="logout()">Logout</button>
         </div>
     </header>
 
-    <main id="mainScreen">
-        <div class="tab-buttons">
-            <button onclick="showFeed('home')" data-tooltip="Chronological posts">Home</button>
-            <button onclick="showFeed('trending')" data-tooltip="Top reacted posts">Trending</button>
-            <button onclick="showFeed('groups')" data-tooltip="Interest-based groups">Groups</button>
-            <button onclick="showFeed('comedy')" data-tooltip="Funny content">Comedy</button>
-            <button onclick="showFeed('family')" data-tooltip="Family tree feed">Family</button>
-        </div>
-        <div id="feed" class="feed">
-            <div id="globeContainer"></div>
-            <div id="tokenStats">Tokens: <span id="userTokens">0</span> | Active Users: <span id="activeUsers">1</span> | Blockchain Balance: <span id="blockchainBalance">0</span></div>
-            <div id="linkInputContainer">
-                <input type="text" id="linkInput" placeholder="Share a link..." disabled>
-                <button onclick="submitLink()" data-tooltip="Post a link" disabled>Submit</button>
-            </div>
-            <div id="tWheel">
-                <button onclick="spinTWheel()" data-tooltip="Spin for tokens" disabled>Spin T-Wheel</button>
-            </div>
-            <div id="linksContainer"></div>
-        </div>
-        <div id="familyTreeContainer" style="display: none;">
-            <h3>Family Tree 🌳</h3>
-            <input type="text" id="familyMemberInput" placeholder="Add family member (username)" disabled>
-            <button onclick="addFamilyMember()" data-tooltip="Link a relative" disabled>Add Relative</button>
-            <div id="familyTree"></div>
-        </div>
-        <button id="infoBtn" onclick="showInfo()" data-tooltip="App information">ℹ️ Info</button>
-        <button id="installBtn" onclick="installPWA()" data-tooltip="Add Tc App to your device">Install App 📲</button>
-        <div id="animationContainer"></div>
-    </main>
-
-    <div id="authScreen" style="display: none;">
+    <main id="authScreen">
         <div id="loginForm">
             <h2>Login</h2>
             <input type="text" id="loginUsername" placeholder="Username">
@@ -514,8 +487,45 @@
         </div>
     </main>
 
+    <main id="mainScreen" class="hidden">
+        <div class="tab-buttons">
+            <button onclick="showFeed('home')" data-tooltip="Chronological posts">Home</button>
+            <button onclick="showFeed('trending')" data-tooltip="Top reacted posts">Trending</button>
+            <button onclick="showFeed('groups')" data-tooltip="Interest-based groups">Groups</button>
+            <button onclick="showFeed('comedy')" data-tooltip="Funny content">Comedy</button>
+            <button onclick="showFeed('family')" data-tooltip="Family tree feed">Family</button>
+        </div>
+        <div id="feed" class="feed">
+            <div id="globeContainer"></div>
+            <div id="tokenStats">Tokens: <span id="userTokens">0</span> | Active Users: <span id="activeUsers">1</span> | Blockchain Balance: <span id="blockchainBalance">0</span></div>
+            <div id="linkInputContainer">
+                <input type="text" id="linkInput" placeholder="Share a link...">
+                <button onclick="submitLink()" data-tooltip="Post a link">Submit</button>
+            </div>
+            <div id="tWheel">
+                <button onclick="spinTWheel()" data-tooltip="Spin for tokens">Spin T-Wheel</button>
+            </div>
+            <div id="linksContainer"></div>
+        </div>
+        <div id="familyTreeContainer">
+            <h3>Family Tree 🌳</h3>
+            <input type="text" id="familyMemberInput" placeholder="Add family member (username)">
+            <button onclick="addFamilyMember()" data-tooltip="Link a relative">Add Relative</button>
+            <div id="familyTree"></div>
+        </div>
+        <button id="infoBtn" onclick="showInfo()" data-tooltip="App information">ℹ️ Info</button>
+        <button id="installBtn" onclick="installPWA()" data-tooltip="Add Tc App to your device">Install App 📲</button>
+        <div id="infoPopup">
+            <h3>Tc App</h3>
+            <p>A decentralized social platform with blockchain integration! Share links, earn Troanary Tokens, and connect with family forever!</p>
+            <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
+            <button onclick="hideInfo()">Close</button>
+        </div>
+        <div id="bottomAnimation"></div>
+    </main>
+
     <div id="walletContainer">
-        <button id="connectWalletBtn" onclick="connectWallet()" data-tooltip="Link your MetaMask wallet" disabled>Connect Wallet</button>
+        <button id="connectWalletBtn" onclick="connectWallet()" data-tooltip="Link your MetaMask wallet">Connect Wallet</button>
     </div>
     <div id="searchContainer">
         <input type="text" id="searchInput" placeholder="Search the Tc Universe...">
@@ -539,8 +549,6 @@
         let accounts = [];
         let totalSupply = 1000 * 100;
         let deferredPrompt;
-        let animationLoaded = false;
-        let globeLoaded = false;
 
         // Lazy Load Scripts
         function loadScript(url, callback) {
@@ -581,23 +589,6 @@
             }
         }
 
-        // Show Login/Signup Forms in Menu
-        function showLoginForm() {
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('signupForm').style.display = 'none';
-            document.getElementById('profileSelect').style.display = 'none';
-            document.getElementById('authScreen').style.display = 'block';
-            document.getElementById('mainScreen').style.display = 'none';
-        }
-
-        function showSignupForm() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('signupForm').style.display = 'block';
-            document.getElementById('profileSelect').style.display = 'none';
-            document.getElementById('authScreen').style.display = 'block';
-            document.getElementById('mainScreen').style.display = 'none';
-        }
-
         // Native Sharing on Logo Click
         document.getElementById('shareLogo').addEventListener('click', () => {
             if (navigator.share) {
@@ -614,10 +605,6 @@
 
         // Wallet Integration
         function connectWallet() {
-            if (!currentUser) {
-                alert('Please login to connect your wallet.');
-                return;
-            }
             if (!window.ethereum && !web3) {
                 loadScript('https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js', async () => {
                     await connectWalletLogic();
@@ -634,7 +621,6 @@
                     accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                     console.log('Connected account:', accounts[0]);
                     document.getElementById('connectWalletBtn').textContent = `Connected: ${accounts[0].slice(0, 6)}...`;
-                    document.getElementById('connectWalletBtn').disabled = false;
                     updateBlockchainBalance();
                 } catch (error) {
                     console.error('Wallet connection failed:', error);
@@ -664,7 +650,23 @@
             }
         }
 
+        // Menu Toggle
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            const menu = document.getElementById('menu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+
         // Auth Functions
+        function showSignup() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+        }
+
         function signup() {
             const username = document.getElementById('signupUsername').value.trim();
             const password = document.getElementById('signupPassword').value.trim();
@@ -677,8 +679,8 @@
                 active: true, 
                 friends: [], 
                 profileLinks: [], 
-                family: [], 
-                profilePic: 'default.png', 
+                family: [], // Family members array
+                profilePic: 'default.png', // Default profile picture
                 lat: Math.random() * 180 - 90,
                 lon: Math.random() * 360 - 180 
             };
@@ -704,47 +706,25 @@
             currentUser.profilePic = `${pic}.png`;
             localStorage.setItem(`user_${currentUser.name}`, JSON.stringify(currentUser));
             document.getElementById('profileSelect').style.display = 'none';
-            document.getElementById('mainScreen').style.display = 'block';
-            document.getElementById('authScreen').style.display = 'none';
-            enableLoggedInFeatures();
+            switchToMainScreen();
         }
 
         function logout() {
-            if (!currentUser) return;
             currentUser.active = false;
             currentUser = null;
             adjustSupply(users.filter(u => u.active).length);
-            document.getElementById('mainScreen').style.display = 'block';
-            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('mainScreen').classList.add('hidden');
+            document.getElementById('authScreen').classList.remove('hidden');
             document.getElementById('menu').style.display = 'none';
-            disableLoggedInFeatures();
-            localStorage.removeItem(`user_${currentUser?.name}`);
+            showLogin();
         }
 
-        function enableLoggedInFeatures() {
-            document.getElementById('linkInput').disabled = false;
-            document.getElementById('linkInput').placeholder = "Share a link...";
-            document.querySelector('#linkInputContainer button').disabled = false;
-            document.getElementById('tWheel button').disabled = false;
-            document.getElementById('familyMemberInput').disabled = false;
-            document.querySelector('#familyTreeContainer button').disabled = false;
-            document.getElementById('connectWalletBtn').disabled = false;
+        function switchToMainScreen() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainScreen').classList.remove('hidden');
             updateTokenStats();
-            displayFeed();
-        }
-
-        function disableLoggedInFeatures() {
-            document.getElementById('linkInput').disabled = true;
-            document.getElementById('linkInput').placeholder = "Login to share a link...";
-            document.querySelector('#linkInputContainer button').disabled = true;
-            document.getElementById('tWheel button').disabled = true;
-            document.getElementById('familyMemberInput').disabled = true;
-            document.querySelector('#familyTreeContainer button').disabled = true;
-            document.getElementById('connectWalletBtn').disabled = true;
-            document.getElementById('connectWalletBtn').textContent = 'Connect Wallet';
-            document.getElementById('tokenStats').innerHTML = 'Tokens: 0 | Active Users: 1 | Blockchain Balance: 0';
-            document.getElementById('linksContainer').innerHTML = '';
-            document.getElementById('familyTree').innerHTML = '';
+            showFeed('home');
+            lazyLoadGlobe();
         }
 
         // Feed Navigation
@@ -752,21 +732,15 @@
             currentFeed = feedType;
             document.getElementById('feed').style.display = feedType !== 'family' ? 'block' : 'none';
             document.getElementById('familyTreeContainer').style.display = feedType === 'family' ? 'block' : 'none';
-            document.getElementById('linkInputContainer').style.display = feedType === 'home' || feedType === 'comedy' || feedType === 'groups' || (feedType === 'family' && currentUser) ? 'flex' : 'none';
+            document.getElementById('linkInputContainer').style.display = feedType === 'home' || feedType === 'comedy' || feedType === 'groups' || feedType === 'family' ? 'flex' : 'none';
             if (feedType === 'family') {
-                if (currentUser) {
-                    displayFamilyTree();
-                } else {
-                    document.getElementById('familyTree').innerHTML = '<p>Please login to view your family tree.</p>';
-                }
+                displayFamilyTree();
             } else {
                 displayFeed();
             }
-            loadFeedAnimation(feedType);
         }
 
         function showTokens() {
-            if (!currentUser) return alert('Please login to view tokens.');
             let leaderboard = users.map(u => `${u.name}: ${u.tokens}`).join('\n');
             alert(`Your Tokens: ${currentUser.tokens}\nTotal Supply: ${totalSupply}\nLeaderboard:\n${leaderboard}`);
         }
@@ -777,7 +751,6 @@
 
         // Link Submission & Search
         async function submitLink() {
-            if (!currentUser) return alert('Please login to share links.');
             const linkInput = document.getElementById('linkInput').value.trim();
             if (!linkInput) return alert('Enter a link!');
             spinGlobe();
@@ -820,7 +793,6 @@
         }
 
         function editLink(linkId) {
-            if (!currentUser) return alert('Please login to edit links.');
             const link = links.find(l => l.id === linkId);
             if (link.owner !== currentUser.name) return alert('You can only edit your own links!');
             const newUrl = prompt('Edit link URL:', link.url);
@@ -833,7 +805,6 @@
         }
 
         function deleteLink(linkId) {
-            if (!currentUser) return alert('Please login to delete links.');
             if (links.find(l => l.id === linkId).owner !== currentUser.name) return alert('You can only delete your own links!');
             links = links.filter(l => l.id !== linkId);
             currentUser.profileLinks = currentUser.profileLinks.filter(l => l.id !== linkId);
@@ -884,7 +855,6 @@
         }
 
         function reactToLink(index, reaction) {
-            if (!currentUser) return alert('Please login to react to links.');
             const link = links[index];
             link.reactions[reaction]++;
             currentUser.tokens += 1;
@@ -899,7 +869,6 @@
 
         // Family Tree Functions
         function addFamilyMember() {
-            if (!currentUser) return alert('Please login to add family members.');
             const familyUsername = document.getElementById('familyMemberInput').value.trim();
             if (!familyUsername) return alert('Enter a username to add!');
             const relative = users.find(u => u.name === familyUsername && u.active);
@@ -914,10 +883,6 @@
         function displayFamilyTree() {
             const container = document.getElementById('familyTree');
             container.innerHTML = '';
-            if (!currentUser) {
-                container.innerHTML = '<p>Please login to view your family tree.</p>';
-                return;
-            }
             const familyLinks = links.filter(link => link.feed === 'family' && (link.owner === currentUser.name || currentUser.family.includes(link.owner)));
             familyLinks.forEach((link, index) => {
                 const linkElement = document.createElement('div');
@@ -961,24 +926,18 @@
 
         // Load Family Tree from Storage
         function loadFamilyTree() {
-            const storedFamily = localStorage.getItem(`family_${currentUser?.name}`);
+            const storedFamily = localStorage.getItem(`family_${currentUser.name}`);
             if (storedFamily) {
                 currentUser.family = JSON.parse(storedFamily);
             }
-            const storedUser = localStorage.getItem(`user_${currentUser?.name}`);
+            const storedUser = localStorage.getItem(`user_${currentUser.name}`);
             if (storedUser) {
                 currentUser = JSON.parse(storedUser);
-            }
-            if (currentUser) {
-                enableLoggedInFeatures();
-            } else {
-                disableLoggedInFeatures();
             }
         }
 
         // T-Wheel
         function spinTWheel() {
-            if (!currentUser) return alert('Please login to spin the T-Wheel.');
             const rewards = [1, 5, 10, 20, 50];
             const reward = rewards[Math.floor(Math.random() * rewards.length)];
             currentUser.tokens += reward;
@@ -1010,19 +969,20 @@
         }
 
         // Lazy Load Globe
+        let globeLoaded = false;
         function lazyLoadGlobe() {
             if (globeLoaded) return;
             loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () => {
                 const scene = new THREE.Scene();
-                const camera = new THREE.PerspectiveCamera(75, 150 / 150, 0.1, 1000); // Adjusted aspect ratio for smaller size
+                const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
                 const renderer = new THREE.WebGLRenderer({ antialias: true });
-                renderer.setSize(150, 150); // Halved from 300x300
+                renderer.setSize(300, 300);
                 document.getElementById('globeContainer').appendChild(renderer.domElement);
-                const geometry = new THREE.SphereGeometry(2.5, 16, 16); // Simplified geometry for mobile
+                const geometry = new THREE.SphereGeometry(5, 32, 32);
                 const material = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true });
                 const globe = new THREE.Mesh(geometry, material);
                 scene.add(globe);
-                camera.position.z = 7.5; // Adjusted for smaller size
+                camera.position.z = 15;
 
                 function animateGlobe() {
                     requestAnimationFrame(animateGlobe);
@@ -1043,93 +1003,8 @@
             });
         }
 
-        // Lazy Load Particle Wave
-        let particlesLoaded = false;
-        function lazyLoadParticles() {
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && !particlesLoaded && currentFeed !== 'family') {
-                        loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () => {
-                            const particleScene = new THREE.Scene();
-                            const particleCamera = new THREE.PerspectiveCamera(75, 300 / 150, 0.1, 1000); // Adjusted aspect ratio for smaller size
-                            const particleRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                            particleRenderer.setSize(300, 150); // Halved from 600x300
-                            document.getElementById('animationContainer').appendChild(particleRenderer.domElement);
-
-                            const particles = [];
-                            const particleCount = 500; // Reduced from 1000 for mobile performance
-                            const gridSize = 15; // Reduced grid size
-                            const geometryParticles = new THREE.BufferGeometry();
-                            const positions = new Float32Array(particleCount * 3);
-                            const colors = new Float32Array(particleCount * 3);
-
-                            for (let i = 0; i < particleCount; i++) {
-                                const x = (i % gridSize) - gridSize / 2;
-                                const z = Math.floor(i / gridSize) - gridSize / 2;
-                                const y = 0;
-                                positions[i * 3] = x * 0.5; // Smaller scale for mobile
-                                positions[i * 3 + 1] = y;
-                                positions[i * 3 + 2] = z * 0.5; // Smaller scale for mobile
-                                colors[i * 3] = 0;
-                                colors[i * 3 + 1] = 1;
-                                colors[i * 3 + 2] = 1;
-                                particles.push({ x, y, z, baseY: y });
-                            }
-
-                            geometryParticles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                            geometryParticles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-                            const materialParticles = new THREE.PointsMaterial({ size: 0.1, vertexColors: true }); // Smaller size
-                            const particleSystem = new THREE.Points(geometryParticles, materialParticles);
-                            particleScene.add(particleSystem);
-
-                            particleCamera.position.z = 7.5; // Adjusted for smaller size
-
-                            let mouseX = 0, mouseY = 0;
-                            document.addEventListener('mousemove', (e) => {
-                                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-                                mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-                            });
-                            // Touch support for mobile
-                            document.addEventListener('touchmove', (e) => {
-                                const touch = e.touches[0];
-                                mouseX = (touch.clientX / window.innerWidth) * 2 - 1;
-                                mouseY = -(touch.clientY / window.innerHeight) * 2 + 1;
-                            });
-
-                            function animateParticles() {
-                                requestAnimationFrame(animateParticles);
-                                const positions = particleSystem.geometry.attributes.position.array;
-                                for (let i = 0; i < particleCount; i++) {
-                                    const particle = particles[i];
-                                    const distX = particle.x - mouseX * 5; // Reduced influence for mobile
-                                    const distZ = particle.z - mouseY * 5; // Reduced influence for mobile
-                                    const distance = Math.sqrt(distX * distX + distZ * distZ);
-                                    particle.y = Math.sin(Date.now() * 0.001 + distance * 0.1) * 1; // Simplified wave for mobile
-                                    positions[i * 3 + 1] = particle.y;
-                                }
-                                particleSystem.geometry.attributes.position.needsUpdate = true;
-                                particleRenderer.render(particleScene, particleCamera);
-                            }
-                            animateParticles();
-                            particlesLoaded = true;
-                            observer.disconnect();
-                        });
-                    }
-                });
-            }, { threshold: 0.1 });
-            observer.observe(document.getElementById('animationContainer'));
-        }
-
         // Initial Load
-        if (currentUser) {
-            enableLoggedInFeatures();
-        } else {
-            disableLoggedInFeatures();
-            document.getElementById('mainScreen').style.display = 'block';
-        }
-        loadFamilyTree();
-        lazyLoadGlobe();
-        if (!isMobile()) lazyLoadParticles(); // Only load particles on non-mobile for now (can optimize further)
+        if (currentUser) loadFamilyTree();
     </script>
 </body>
 </html>
