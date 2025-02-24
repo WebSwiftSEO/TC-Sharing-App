@@ -118,7 +118,7 @@
             align-items: center;
             width: 100%;
             max-width: 600px;
-            margin: 0.5rem 0;
+            margin: 0.5rem auto; /* Centered with auto margins */
             flex-wrap: wrap;
             gap: 0.5rem;
         }
@@ -362,6 +362,8 @@
             animation: installPulse 1.5s infinite alternate;
             box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
             transition: all 0.3s;
+            position: relative; /* Ensure it's above other elements */
+            z-index: 50; /* Higher z-index to ensure visibility */
         }
         #installBtn:hover {
             box-shadow: 0 0 20px rgba(255, 107, 107, 0.8), 0 0 30px rgba(0, 255, 204, 0.8);
@@ -397,13 +399,49 @@
             margin-right: 0.5rem;
             object-fit: cover;
         }
+        #bottomAnimation {
+            width: 100%;
+            max-width: 600px;
+            height: clamp(100px, 20vw, 150px);
+            margin: 2rem auto;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .neon-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 255, 204, 0.1), rgba(255, 215, 0, 0.1));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .neon-grid::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #00ffcc;
+            animation: neonPulse 2s infinite alternate, gridMove 4s infinite linear;
+            box-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc;
+            border-radius: 50%;
+        }
+        @keyframes neonPulse {
+            from { box-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc, 0 0 15px #00ffcc; }
+            to { box-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc; }
+        }
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(100%, 100%) rotate(360deg); }
+        }
         @media (max-width: 600px) {
             #linkInputContainer { flex-direction: column; }
             input[type="text"], input[type="number"], input[type="password"] { width: 100%; max-width: none; }
             button { width: 100%; max-width: 300px; }
             .feed { padding: 0.5rem; }
             #globeContainer { max-width: 200px; height: 200px; }
-            #particleWaveContainer { max-width: 100%; }
+            #bottomAnimation { max-width: 100%; height: clamp(80px, 15vw, 100px); }
             .profile-pic { width: 40px; height: 40px; }
         }
     </style>
@@ -483,6 +521,7 @@
             <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
             <button onclick="hideInfo()">Close</button>
         </div>
+        <div id="bottomAnimation"></div>
     </main>
 
     <div id="walletContainer">
@@ -686,17 +725,6 @@
             updateTokenStats();
             showFeed('home');
             lazyLoadGlobe();
-            lazyLoadParticles();
-        }
-
-        function showInstall() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(choice => {
-                    if (choice.outcome === 'accepted') console.log('PWA installed');
-                    deferredPrompt = null;
-                });
-            }
         }
 
         // Feed Navigation
@@ -973,90 +1001,6 @@
                 };
                 globeLoaded = true;
             });
-        }
-
-        // Lazy Load Particle Wave
-        let particlesLoaded = false;
-        function lazyLoadParticles() {
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && !particlesLoaded) {
-                        loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () => {
-                            const particleScene = new THREE.Scene();
-                            const particleCamera = new THREE.PerspectiveCamera(75, 600 / 300, 0.1, 1000);
-                            const particleRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                            particleRenderer.setSize(600, 300);
-                            document.getElementById('particleWaveContainer').appendChild(particleRenderer.domElement);
-
-                            const particles = [];
-                            const particleCount = 1000;
-                            const gridSize = 20;
-                            const geometryParticles = new THREE.BufferGeometry();
-                            const positions = new Float32Array(particleCount * 3);
-                            const colors = new Float32Array(particleCount * 3);
-
-                            for (let i = 0; i < particleCount; i++) {
-                                const x = (i % gridSize) - gridSize / 2;
-                                const z = Math.floor(i / gridSize) - gridSize / 2;
-                                const y = 0;
-                                positions[i * 3] = x;
-                                positions[i * 3 + 1] = y;
-                                positions[i * 3 + 2] = z;
-                                colors[i * 3] = 0;
-                                colors[i * 3 + 1] = 1;
-                                colors[i * 3 + 2] = 1;
-                                particles.push({ x, y, z, baseY: y });
-                            }
-
-                            geometryParticles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                            geometryParticles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-                            const materialParticles = new THREE.PointsMaterial({ size: 0.2, vertexColors: true });
-                            const particleSystem = new THREE.Points(geometryParticles, materialParticles);
-                            particleScene.add(particleSystem);
-
-                            particleCamera.position.z = 15;
-
-                            let mouseX = 0, mouseY = 0;
-                            document.addEventListener('mousemove', (e) => {
-                                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-                                mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-                            });
-
-                            function animateParticles() {
-                                requestAnimationFrame(animateParticles);
-                                const positions = particleSystem.geometry.attributes.position.array;
-                                for (let i = 0; i < particleCount; i++) {
-                                    const particle = particles[i];
-                                    const distX = particle.x - mouseX * 10;
-                                    const distZ = particle.z - mouseY * 10;
-                                    const distance = Math.sqrt(distX * distX + distZ * distZ);
-                                    particle.y = Math.sin(Date.now() * 0.001 + distance * 0.2) * 2;
-                                    positions[i * 3 + 1] = particle.y;
-                                }
-                                particleSystem.geometry.attributes.position.needsUpdate = true;
-                                particleRenderer.render(particleScene, particleCamera);
-                            }
-                            animateParticles();
-                            particlesLoaded = true;
-                            observer.disconnect();
-                        });
-                    }
-                });
-            }, { threshold: 0.1 });
-            observer.observe(document.getElementById('particleWaveContainer'));
-        }
-
-        // Fix 3D JS on Mobile
-        function isMobile() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        }
-
-        if (isMobile()) {
-            // Disable 3D animations on mobile to prevent breaking
-            window.lazyLoadParticles = () => {};
-            document.getElementById('particleWaveContainer').style.display = 'none';
-        } else {
-            lazyLoadParticles();
         }
 
         // Initial Load
