@@ -11,15 +11,15 @@
     <link rel="manifest" href="./manifest.json">
     <style>
         body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #0d0d0d; color: #e0e0e0; overflow-x: hidden; }
-        header { background-color: #1a1a1a; color: #fff; text-align: center; padding: 1rem; border-bottom: 2px solid #00ffcc; position: relative; }
-        header h1 { animation: pulse 2s infinite alternate; font-size: 2rem; margin: 0; }
+        header { background-color: #1a1a1a; color: #fff; padding: 1rem; border-bottom: 2px solid #00ffcc; position: relative; text-align: center; }
+        header h1 { animation: pulse 2s infinite alternate; font-size: 2rem; margin: 0; display: inline; }
         @keyframes pulse { from { color: #00ffcc; } to { color: #ffd700; } }
         #menuBtn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: #00ffcc; font-size: 1.5rem; cursor: pointer; }
         #menu { display: none; position: absolute; top: 3.5rem; right: 1rem; background: #1a1a1a; border: 1px solid #00ffcc; border-radius: 5px; padding: 0.5rem; }
         #menu button { display: block; width: 100%; text-align: left; background: none; border: none; color: #00ffcc; padding: 0.5rem; cursor: pointer; }
         #menu button:hover { color: #ffd700; }
         main { padding: 1rem; text-align: center; }
-        #feed { margin-top: 1rem; padding: 1rem; background-color: #1a1a1a; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 255, 204, 0.5); }
+        .feed { margin-top: 1rem; padding: 1rem; background-color: #1a1a1a; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 255, 204, 0.5); }
         #globeContainer { width: 100%; max-width: 300px; height: 300px; margin: 0 auto; }
         input[type="text"], input[type="number"], input[type="password"] { width: 80%; max-width: 300px; padding: 0.5rem; border-radius: 5px; border: 1px solid #00ffcc; background-color: #333; color: #e0e0e0; margin: 0.5rem 0; }
         button { cursor: pointer; padding: 0.5rem 1rem; border-radius: 5px; border: none; background-color: #00ffcc; color: #0d0d0d; transition: background-color 0.3s, transform 0.2s; }
@@ -27,13 +27,17 @@
         .link-item { margin: 0.5rem 0; padding: 0.5rem; background: #222; border-radius: 5px; display: flex; flex-direction: column; align-items: flex-start; }
         .link-item a { color: #00ffcc; text-decoration: none; word-break: break-all; }
         .link-item img { max-width: 100%; max-height: 200px; margin-top: 0.5rem; border-radius: 5px; }
-        .link-item button { margin-top: 0.5rem; padding: 0.3rem 0.6rem; font-size: 0.9rem; }
+        .link-item .reactions { margin-top: 0.5rem; }
+        .link-item button { margin: 0.3rem; padding: 0.3rem 0.6rem; font-size: 0.9rem; }
         #authScreen, #mainScreen { transition: opacity 0.3s; }
         #authScreen.hidden, #mainScreen.hidden { display: none; opacity: 0; }
-        #friendsList { margin-top: 1rem; }
-        .friend-item { display: flex; justify-content: space-between; padding: 0.5rem; background: #222; border-radius: 5px; margin: 0.5rem 0; }
         .auth-toggle { color: #00ffcc; cursor: pointer; margin-top: 0.5rem; }
         .auth-toggle:hover { color: #ffd700; }
+        #infoPopup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a1a1a; padding: 1rem; border: 1px solid #00ffcc; border-radius: 5px; z-index: 1000; max-width: 80%; }
+        #searchInput { width: 80%; max-width: 400px; margin: 0.5rem auto; }
+        .tab-buttons { display: flex; justify-content: center; margin: 1rem 0; }
+        .tab-buttons button { margin: 0 0.5rem; }
+        #tWheel { margin: 1rem 0; }
     </style>
 </head>
 <body>
@@ -41,6 +45,12 @@
         <h1>🚀 Tc App</h1>
         <button id="menuBtn">☰</button>
         <div id="menu">
+            <button onclick="showFeed('home')">Home</button>
+            <button onclick="showFeed('trending')">Trending</button>
+            <button onclick="showFeed('groups')">Groups</button>
+            <button onclick="showFeed('comedy')">Comedy</button>
+            <button onclick="showTokens()">Tokens</button>
+            <button onclick="showSettings()">Settings</button>
             <button onclick="showInstall()">Install</button>
             <button onclick="logout()">Logout</button>
         </div>
@@ -64,19 +74,30 @@
     </main>
 
     <main id="mainScreen" class="hidden">
-        <div id="feed">
+        <div class="tab-buttons">
+            <button onclick="showFeed('home')">Home</button>
+            <button onclick="showFeed('trending')">Trending</button>
+            <button onclick="showFeed('groups')">Groups</button>
+            <button onclick="showFeed('comedy')">Comedy</button>
+        </div>
+        <div id="feed" class="feed">
             <div id="globeContainer"></div>
-            <div id="tokenStats">Tokens: <span id="userTokens">0</span> | Active Users: <span id="activeUsers">1</span> | Cap: <span id="tokenCap">1000</span></div>
-            <input type="text" id="linkInput" placeholder="Share a link to earn Troanary Coins...">
+            <div id="tokenStats">Tokens: <span id="userTokens">0</span> | Active Users: <span id="activeUsers">1</span></div>
+            <input type="text" id="linkInput" placeholder="Share a link...">
             <button onclick="submitLink()">Submit</button>
-            <input type="text" id="giftUser" placeholder="Username to gift tokens">
-            <input type="number" id="giftAmount" placeholder="Amount">
-            <button onclick="giftTokens()">Gift Tokens</button>
-            <button onclick="giftTokensBluetooth()">Gift via Bluetooth</button>
-            <input type="text" id="friendInput" placeholder="Add friend by username">
-            <button onclick="addFriend()">Add Friend</button>
+            <input type="text" id="searchInput" placeholder="Search links...">
+            <button onclick="searchLinks()">Search</button>
+            <div id="tWheel">
+                <button onclick="spinTWheel()">Spin T-Wheel</button>
+            </div>
             <div id="linksContainer"></div>
-            <div id="friendsList"></div>
+        </div>
+        <button id="infoBtn" onclick="showInfo()">ℹ️ Info</button>
+        <div id="infoPopup">
+            <h3>Tc App</h3>
+            <p>A decentralized social platform where you can share links, earn Troanary Tokens, and connect with others!</p>
+            <p>Submit links, react with ❤️🚫🤔, spin the T-Wheel for rewards, and explore feeds!</p>
+            <button onclick="hideInfo()">Close</button>
         </div>
     </main>
 
@@ -84,7 +105,8 @@
         let currentUser = null;
         let users = [];
         let links = [];
-        let tokenCap = 1000;
+        let groups = [];
+        let currentFeed = 'home';
 
         // PWA Setup
         if ('serviceWorker' in navigator) {
@@ -105,6 +127,7 @@
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         });
 
+        // Auth Functions
         function showSignup() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('signupForm').style.display = 'block';
@@ -120,15 +143,9 @@
             const password = document.getElementById('signupPassword').value.trim();
             if (!username || !password) return alert('Please enter both username and password!');
             if (users.find(u => u.name === username)) return alert('Username already exists!');
-            currentUser = { name: username, password: password, tokens: 0, active: true, friends: [] };
+            currentUser = { name: username, password: password, tokens: 0, active: true, friends: [], profileLinks: [] };
             users.push(currentUser);
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('mainScreen').classList.remove('hidden');
-            updateTokenStats();
-            displayPersonalizedFeed();
-            displayFriends();
-            document.getElementById('signupUsername').value = '';
-            document.getElementById('signupPassword').value = '';
+            switchToMainScreen();
         }
 
         function login() {
@@ -137,13 +154,7 @@
             if (!username || !password) return alert('Please enter both username and password!');
             currentUser = users.find(u => u.name === username && u.password === password);
             if (!currentUser) return alert('Invalid username or password!');
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('mainScreen').classList.remove('hidden');
-            updateTokenStats();
-            displayPersonalizedFeed();
-            displayFriends();
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
+            switchToMainScreen();
         }
 
         function logout() {
@@ -152,6 +163,13 @@
             document.getElementById('authScreen').classList.remove('hidden');
             document.getElementById('menu').style.display = 'none';
             showLogin();
+        }
+
+        function switchToMainScreen() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainScreen').classList.remove('hidden');
+            updateTokenStats();
+            showFeed('home');
         }
 
         function showInstall() {
@@ -164,155 +182,131 @@
             }
         }
 
-        // Updated submitLink function
+        // Feed Navigation
+        function showFeed(feedType) {
+            currentFeed = feedType;
+            document.getElementById('linkInput').style.display = feedType === 'home' || feedType === 'comedy' || feedType === 'groups' ? 'block' : 'none';
+            displayFeed();
+        }
+
+        function showTokens() {
+            alert(`Your Troanary Tokens: ${currentUser.tokens}\nLeaderboard coming soon!`);
+        }
+
+        function showSettings() {
+            alert('Settings: Coming soon!');
+        }
+
+        // Link Submission & Search
         async function submitLink() {
             const linkInput = document.getElementById('linkInput').value.trim();
             if (!linkInput) return alert('Enter a link!');
-            
             spinGlobe();
             const reward = await calculateLinkReward(linkInput);
             currentUser.tokens += reward;
-            
             const metadata = await fetchLinkMetadata(linkInput);
-            // Store both URL and anchor text (if available)
             const linkText = metadata.title || linkInput.split('/').pop() || 'Shared Link';
-            links.unshift({ 
-                url: linkInput, 
-                text: linkText, 
-                shares: 0, 
-                owner: currentUser.name, 
+            const newLink = {
+                url: linkInput,
+                text: linkText,
                 image: metadata.image,
-                timestamp: Date.now() 
-            }); // Add to beginning of array for newest first
-            
+                owner: currentUser.name,
+                timestamp: Date.now(),
+                reactions: { love: 0, pass: 0, maybe: 0 },
+                feed: currentFeed === 'groups' ? (prompt('Enter group name') || 'General') : currentFeed
+            };
+            links.unshift(newLink);
+            currentUser.profileLinks.push(newLink);
             updateTokenStats();
-            displayPersonalizedFeed();
+            displayFeed();
             document.getElementById('linkInput').value = '';
-            adjustTokenCap();
         }
 
         async function calculateLinkReward(url) {
-            const baseReward = Math.min(10, Math.floor(url.length / 10));
-            const randomBonus = Math.floor(Math.random() * 5);
-            return baseReward + randomBonus;
+            return Math.floor(Math.random() * 10) + 1; // Random 1-10 tokens
         }
 
-        // Enhanced metadata fetch with title
         async function fetchLinkMetadata(url) {
-            // Simulated metadata - in production, use an API
-            return { 
+            return {
                 image: url.includes('image') ? 'https://via.placeholder.com/150' : null,
-                title: url.includes('example') ? 'Example Page' : null 
+                title: url.includes('example') ? 'Example Page' : null
             };
         }
 
-        function giftTokens() {
-            const recipientName = document.getElementById('giftUser').value.trim();
-            const amount = parseInt(document.getElementById('giftAmount').value);
-            if (!recipientName || !amount || amount <= 0) return alert('Enter valid username and amount!');
-            if (currentUser.tokens < amount) return alert('Not enough tokens!');
-            let recipient = users.find(u => u.name === recipientName);
-            if (!recipient) {
-                recipient = { name: recipientName, password: '', tokens: 0, active: true, friends: [] };
-                users.push(recipient);
-            }
-            currentUser.tokens -= amount;
-            recipient.tokens += amount;
-            updateTokenStats();
-            document.getElementById('giftUser').value = '';
-            document.getElementById('giftAmount').value = '';
-            adjustTokenCap();
+        function searchLinks() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            displayFeed(query);
         }
 
-        function giftTokensBluetooth() {
-            const recipientName = document.getElementById('giftUser').value.trim();
-            const amount = parseInt(document.getElementById('giftAmount').value);
-            if (!recipientName || !amount || amount <= 0) return alert('Enter valid username and amount!');
-            if (currentUser.tokens < amount) return alert('Not enough tokens!');
-            if (!navigator.bluetooth) return alert('Bluetooth not supported in this browser!');
-            alert(`Simulating Bluetooth transfer of ${amount} Troanary Coins to ${recipientName}`);
-        }
-
-        function addFriend() {
-            const friendName = document.getElementById('friendInput').value.trim();
-            if (!friendName || friendName === currentUser.name) return alert('Enter a valid friend username!');
-            let friend = users.find(u => u.name === friendName);
-            if (!friend) {
-                friend = { name: friendName, password: '', tokens: 0, active: true, friends: [] };
-                users.push(friend);
-            }
-            if (!currentUser.friends.includes(friendName)) {
-                currentUser.friends.push(friendName);
-                displayFriends();
-            }
-            document.getElementById('friendInput').value = '';
-        }
-
-        function shareLink(index) {
-            currentUser.tokens += 2;
-            links[index].shares += 1;
-            updateTokenStats();
-            displayPersonalizedFeed();
-        }
-
-        // Updated feed display function
-        function displayPersonalizedFeed() {
+        // Feed Display
+        function displayFeed(searchQuery = '') {
             const container = document.getElementById('linksContainer');
             container.innerHTML = '';
-            
-            // Sort links by timestamp (newest first)
-            const sortedLinks = links.slice().sort((a, b) => b.timestamp - a.timestamp);
-            
-            const relevantLinks = sortedLinks.filter(link => 
-                link.owner === currentUser.name || 
-                currentUser.friends.includes(link.owner) || 
-                link.owner.includes(currentUser.name.substring(0, 3))
-            );
-            
-            relevantLinks.forEach((link, index) => {
+            let filteredLinks = links.slice();
+
+            if (currentFeed === 'trending') {
+                filteredLinks.sort((a, b) => (b.reactions.love + b.reactions.pass + b.reactions.maybe) - (a.reactions.love + a.reactions.pass + a.reactions.maybe));
+            } else if (currentFeed !== 'home') {
+                filteredLinks = filteredLinks.filter(link => link.feed === currentFeed);
+            }
+
+            if (searchQuery) {
+                filteredLinks = filteredLinks.filter(link => link.text.toLowerCase().includes(searchQuery) || link.url.toLowerCase().includes(searchQuery));
+            }
+
+            filteredLinks.forEach((link, index) => {
                 const linkElement = document.createElement('div');
                 linkElement.className = 'link-item';
-                
-                // Display either image or anchor text
                 const content = link.image 
                     ? `<img src="${link.image}" alt="Featured Image">`
                     : `<a href="${link.url}" target="_blank">${link.text}</a>`;
-                
                 linkElement.innerHTML = `
                     ${content}
-                    <button onclick="shareLink(${links.indexOf(link)})">Share (+2)</button>
-                    <span>Shares: ${link.shares} | By: ${link.owner}</span>
+                    <div class="reactions">
+                        <button onclick="reactToLink(${index}, 'love')">❤️ ${link.reactions.love}</button>
+                        <button onclick="reactToLink(${index}, 'pass')">🚫 ${link.reactions.pass}</button>
+                        <button onclick="reactToLink(${index}, 'maybe')">🤔 ${link.reactions.maybe}</button>
+                    </div>
+                    <span>By: ${link.owner} | ${new Date(link.timestamp).toLocaleTimeString()}</span>
                 `;
                 container.appendChild(linkElement);
             });
         }
 
-        function displayFriends() {
-            const container = document.getElementById('friendsList');
-            container.innerHTML = '<h3>Friends</h3>';
-            currentUser.friends.forEach(friendName => {
-                const friend = users.find(u => u.name === friendName);
-                const friendElement = document.createElement('div');
-                friendElement.className = 'friend-item';
-                friendElement.innerHTML = `${friendName} - ${friend.tokens} tokens`;
-                container.appendChild(friendElement);
-            });
+        function reactToLink(index, reaction) {
+            const link = links[index];
+            link.reactions[reaction]++;
+            currentUser.tokens += 1; // 1 token per reaction
+            updateTokenStats();
+            displayFeed();
+            if (Math.random() < 0.2) spinTWheel(); // 20% chance to trigger T-Wheel
         }
 
+        // T-Wheel
+        function spinTWheel() {
+            const reward = Math.floor(Math.random() * 20) + 1; // 1-20 tokens
+            currentUser.tokens += reward;
+            updateTokenStats();
+            alert(`T-Wheel Spun! You won ${reward} Troanary Tokens!`);
+        }
+
+        // Info Popup
+        function showInfo() {
+            document.getElementById('infoPopup').style.display = 'block';
+        }
+
+        function hideInfo() {
+            document.getElementById('infoPopup').style.display = 'none';
+        }
+
+        // Token Stats
         function updateTokenStats() {
             const activeUsers = users.filter(u => u.active).length;
             document.getElementById('userTokens').textContent = currentUser ? currentUser.tokens : 0;
             document.getElementById('activeUsers').textContent = activeUsers;
-            document.getElementById('tokenCap').textContent = tokenCap;
         }
 
-        function adjustTokenCap() {
-            const activeUsers = users.filter(u => u.active).length;
-            const activityFactor = links.length + users.reduce((sum, u) => sum + u.tokens, 0);
-            tokenCap = Math.min(10000, Math.max(100, activeUsers * 100 + activityFactor * 0.1));
-            updateTokenStats();
-        }
-
+        // 3D Globe
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -338,6 +332,17 @@
                 speed *= 0.95;
                 if (speed < 0.01) clearInterval(spinInterval);
             }, 16);
+        }
+
+        // Placeholder for future features
+        function addGlobeMarker() {
+            console.log('Globe marker feature coming soon!');
+            // Future: Add markers for user activity
+        }
+
+        function initBlockchain() {
+            console.log('Blockchain integration coming soon!');
+            // Future: Peer-to-peer sharing
         }
     </script>
 </body>
