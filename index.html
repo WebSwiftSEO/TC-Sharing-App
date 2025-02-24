@@ -7,6 +7,8 @@
     <meta name="description" content="Tc App - Decentralized Social and Crypto Platform">
     <meta name="keywords" content="Tc App, Troanary, Crypto, Social Media, Troanary Coin">
     <title>Tc App - Troanary Connection</title>
+    <link rel="icon" type="image/png" href="favicon.png"> <!-- Placeholder for favicon -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png"> <!-- Placeholder for iOS icon -->
     <link rel="manifest" href="./manifest.json">
     <style>
         body { 
@@ -119,6 +121,31 @@
             margin: 0.5rem 0;
             flex-wrap: wrap;
             gap: 0.5rem;
+        }
+        #profileSelect {
+            display: none;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #222;
+            border-radius: 5px;
+            width: 90%;
+            max-width: 600px;
+            box-sizing: border-box;
+            flex-direction: column;
+            align-items: center;
+        }
+        #profileSelect button {
+            margin: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #00ffcc;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        #profileSelect button:hover {
+            background-color: #ffd700;
+            transform: scale(1.1);
         }
         input[type="text"], input[type="number"], input[type="password"] { 
             width: 80%; 
@@ -329,14 +356,6 @@
             transform: scale(1.2); 
             text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 30px #ffd700; 
         }
-        #particleWaveContainer { 
-            width: 100%; 
-            max-width: 600px; 
-            height: clamp(200px, 50vw, 300px); 
-            margin: 2rem auto; 
-            position: relative; 
-            z-index: 1; 
-        }
         #installBtn {
             margin-top: 1rem;
             background: linear-gradient(45deg, #00ffcc, #4ecdc4, #ff6b6b);
@@ -371,6 +390,13 @@
             justify-content: space-between;
             align-items: center;
         }
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            object-fit: cover;
+        }
         @media (max-width: 600px) {
             #linkInputContainer { flex-direction: column; }
             input[type="text"], input[type="number"], input[type="password"] { width: 100%; max-width: none; }
@@ -378,6 +404,7 @@
             .feed { padding: 0.5rem; }
             #globeContainer { max-width: 200px; height: 200px; }
             #particleWaveContainer { max-width: 100%; }
+            .profile-pic { width: 40px; height: 40px; }
         }
     </style>
 </head>
@@ -413,6 +440,12 @@
             <input type="password" id="signupPassword" placeholder="Password">
             <button onclick="signup()" data-tooltip="Create a new account">Sign Up</button>
             <div class="auth-toggle" onclick="showLogin()">Already have an account? Login</div>
+        </div>
+        <div id="profileSelect" style="display: none;">
+            <h3>Choose Your Profile Picture</h3>
+            <button onclick="selectProfile('sun')" data-tooltip="Select Sun">Sun 🌞</button>
+            <button onclick="selectProfile('earth')" data-tooltip="Select Earth">Earth 🌍</button>
+            <button onclick="selectProfile('star')" data-tooltip="Select Star">Star ⭐</button>
         </div>
     </main>
 
@@ -450,7 +483,6 @@
             <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
             <button onclick="hideInfo()">Close</button>
         </div>
-        <div id="particleWaveContainer"></div>
     </main>
 
     <div id="walletContainer">
@@ -609,12 +641,14 @@
                 friends: [], 
                 profileLinks: [], 
                 family: [], // Family members array
+                profilePic: 'default.png', // Default profile picture
                 lat: Math.random() * 180 - 90,
                 lon: Math.random() * 360 - 180 
             };
             users.push(currentUser);
             adjustSupply(users.filter(u => u.active).length);
-            switchToMainScreen();
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('profileSelect').style.display = 'block';
         }
 
         function login() {
@@ -625,6 +659,14 @@
             if (!currentUser) return alert('Invalid username or password!');
             currentUser.active = true;
             adjustSupply(users.filter(u => u.active).length);
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('profileSelect').style.display = 'block';
+        }
+
+        function selectProfile(pic) {
+            currentUser.profilePic = `${pic}.png`;
+            localStorage.setItem(`user_${currentUser.name}`, JSON.stringify(currentUser));
+            document.getElementById('profileSelect').style.display = 'none';
             switchToMainScreen();
         }
 
@@ -645,6 +687,16 @@
             showFeed('home');
             lazyLoadGlobe();
             lazyLoadParticles();
+        }
+
+        function showInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(choice => {
+                    if (choice.outcome === 'accepted') console.log('PWA installed');
+                    deferredPrompt = null;
+                });
+            }
         }
 
         // Feed Navigation
@@ -681,7 +733,7 @@
             const newLink = {
                 url: linkInput,
                 text: linkText,
-                image: metadata.image,
+                image: metadata.image || 'https://via.placeholder.com/150', // Default featured image
                 owner: currentUser.name,
                 timestamp: Date.now(),
                 reactions: { love: 0, pass: 0, maybe: 0 },
@@ -755,7 +807,10 @@
                     ? `<img src="${link.image}" alt="Featured Image">`
                     : `<a href="${link.url}" target="_blank">${link.text}</a>`;
                 linkElement.innerHTML = `
-                    ${content}
+                    <div style="display: flex; align-items: center;">
+                        <img src="${users.find(u => u.name === link.owner)?.profilePic || 'default.png'}" alt="${link.owner}'s Profile" class="profile-pic">
+                        ${content}
+                    </div>
                     <div class="reactions">
                         <button onclick="reactToLink(${index}, 'love')" data-tooltip="Love this post">❤️ ${link.reactions.love}</button>
                         <button onclick="reactToLink(${index}, 'pass')" data-tooltip="Pass on this">🚫 ${link.reactions.pass}</button>
@@ -808,7 +863,10 @@
                     ? `<img src="${link.image}" alt="Featured Image">`
                     : `<a href="${link.url}" target="_blank">${link.text}</a>`;
                 linkElement.innerHTML = `
-                    ${content}
+                    <div style="display: flex; align-items: center;">
+                        <img src="${users.find(u => u.name === link.owner)?.profilePic || 'default.png'}" alt="${link.owner}'s Profile" class="profile-pic">
+                        ${content}
+                    </div>
                     <div class="reactions">
                         <button onclick="reactToLink(${links.indexOf(link)}, 'love')" data-tooltip="Love this post">❤️ ${link.reactions.love}</button>
                         <button onclick="reactToLink(${links.indexOf(link)}, 'pass')" data-tooltip="Pass on this">🚫 ${link.reactions.pass}</button>
@@ -828,7 +886,11 @@
             currentUser.family.forEach(member => {
                 const node = document.createElement('div');
                 node.className = 'family-node';
-                node.innerHTML = `${member}`;
+                const user = users.find(u => u.name === member);
+                node.innerHTML = `
+                    <img src="${user?.profilePic || 'default.png'}" alt="${member}'s Profile" class="profile-pic">
+                    ${member}
+                `;
                 familyList.appendChild(node);
             });
             container.insertBefore(familyList, container.firstChild);
@@ -839,6 +901,10 @@
             const storedFamily = localStorage.getItem(`family_${currentUser.name}`);
             if (storedFamily) {
                 currentUser.family = JSON.parse(storedFamily);
+            }
+            const storedUser = localStorage.getItem(`user_${currentUser.name}`);
+            if (storedUser) {
+                currentUser = JSON.parse(storedUser);
             }
         }
 
@@ -978,6 +1044,19 @@
                 });
             }, { threshold: 0.1 });
             observer.observe(document.getElementById('particleWaveContainer'));
+        }
+
+        // Fix 3D JS on Mobile
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        if (isMobile()) {
+            // Disable 3D animations on mobile to prevent breaking
+            window.lazyLoadParticles = () => {};
+            document.getElementById('particleWaveContainer').style.display = 'none';
+        } else {
+            lazyLoadParticles();
         }
 
         // Initial Load
