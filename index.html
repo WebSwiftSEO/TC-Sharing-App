@@ -103,7 +103,14 @@
             max-width: 300px; 
             height: 300px; 
             margin: 0 auto; 
-            cursor: grab; 
+        }
+        #linkInputContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin: 0.5rem 0;
         }
         input[type="text"], input[type="number"], input[type="password"] { 
             width: 80%; 
@@ -113,7 +120,7 @@
             border: 1px solid #00ffcc; 
             background-color: #333; 
             color: #e0e0e0; 
-            margin: 0.5rem 0; 
+            margin: 0 0.5rem 0 0; 
         }
         button { 
             cursor: pointer; 
@@ -211,10 +218,11 @@
         }
         #tWheel { 
             margin: 1rem 0; 
+            text-align: center; 
         }
         #searchContainer { 
             position: fixed; 
-            bottom: 0; 
+            bottom: 4rem; 
             left: 0; 
             width: 100%; 
             padding: 0.5rem; 
@@ -257,7 +265,7 @@
         }
         #walletContainer { 
             position: fixed; 
-            bottom: 4rem; 
+            bottom: 8rem; 
             width: 100%; 
             text-align: center; 
         }
@@ -269,6 +277,32 @@
             top: 1rem; 
             left: 1rem; 
             background: #00ffcc; 
+        }
+        footer { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            padding: 0.5rem; 
+            background: #1a1a1a; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 1rem; 
+            border-top: 1px solid #00ffcc; 
+            z-index: 100; 
+        }
+        .social-icon { 
+            font-size: 1.5rem; 
+            color: #00ffcc; 
+            text-decoration: none; 
+            transition: all 0.3s; 
+            text-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc; 
+        }
+        .social-icon:hover { 
+            color: #ffd700; 
+            transform: scale(1.2); 
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 30px #ffd700; 
         }
     </style>
 </head>
@@ -316,8 +350,10 @@
         <div id="feed" class="feed">
             <div id="globeContainer"></div>
             <div id="tokenStats">Tokens: <span id="userTokens">0</span> | Active Users: <span id="activeUsers">1</span> | Blockchain Balance: <span id="blockchainBalance">0</span></div>
-            <input type="text" id="linkInput" placeholder="Share a link...">
-            <button onclick="submitLink()" data-tooltip="Post a link">Submit</button>
+            <div id="linkInputContainer">
+                <input type="text" id="linkInput" placeholder="Share a link...">
+                <button onclick="submitLink()" data-tooltip="Post a link">Submit</button>
+            </div>
             <div id="tWheel">
                 <button onclick="spinTWheel()" data-tooltip="Spin for tokens">Spin T-Wheel</button>
             </div>
@@ -327,7 +363,7 @@
         <div id="infoPopup">
             <h3>Tc App</h3>
             <p>A decentralized social platform with blockchain integration! Share links, earn Troanary Tokens, and connect with others!</p>
-            <p>Interact with the globe, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
+            <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
             <button onclick="hideInfo()">Close</button>
         </div>
     </main>
@@ -339,6 +375,13 @@
         <input type="text" id="searchInput" placeholder="Search the Tc Universe...">
         <button id="searchBtn" onclick="searchLinks()" data-tooltip="Search posts">🔍</button>
     </div>
+
+    <footer>
+        <a href="https://twitter.com" target="_blank" class="social-icon" data-tooltip="Twitter">🐦</a>
+        <a href="https://facebook.com" target="_blank" class="social-icon" data-tooltip="Facebook">📘</a>
+        <a href="https://instagram.com" target="_blank" class="social-icon" data-tooltip="Instagram">📸</a>
+        <a href="https://github.com" target="_blank" class="social-icon" data-tooltip="GitHub">🐙</a>
+    </footer>
 
     <script>
         let currentUser = null;
@@ -449,7 +492,6 @@
             users.push(currentUser);
             adjustSupply(users.filter(u => u.active).length);
             switchToMainScreen();
-            updateGlobeMarkers();
         }
 
         function login() {
@@ -461,7 +503,6 @@
             currentUser.active = true;
             adjustSupply(users.filter(u => u.active).length);
             switchToMainScreen();
-            updateGlobeMarkers();
         }
 
         function logout() {
@@ -472,7 +513,6 @@
             document.getElementById('authScreen').classList.remove('hidden');
             document.getElementById('menu').style.display = 'none';
             showLogin();
-            updateGlobeMarkers();
         }
 
         function switchToMainScreen() {
@@ -495,7 +535,7 @@
         // Feed Navigation
         function showFeed(feedType) {
             currentFeed = feedType;
-            document.getElementById('linkInput').style.display = feedType === 'home' || feedType === 'comedy' || feedType === 'groups' ? 'block' : 'none';
+            document.getElementById('linkInputContainer').style.display = feedType === 'home' || feedType === 'comedy' || feedType === 'groups' ? 'flex' : 'none';
             displayFeed();
         }
 
@@ -532,7 +572,6 @@
             updateTokenStats();
             displayFeed();
             document.getElementById('linkInput').value = '';
-            addGlobeMarker(currentUser.lat, currentUser.lon, true); // Glow for new post
         }
 
         async function calculateLinkReward(url) {
@@ -540,7 +579,6 @@
         }
 
         async function fetchLinkMetadata(url) {
-            // Simulated metadata; use a real API in production
             return {
                 image: url.includes('image') || Math.random() > 0.5 ? 'https://via.placeholder.com/150' : null,
                 title: url.includes('example') ? 'Example Page' : (url.split('/').pop() || 'Link Preview')
@@ -616,10 +654,8 @@
             updateTokenStats();
             displayFeed();
             if (Math.random() < 0.2) spinTWheel();
-            // Push notification placeholder
             if ('serviceWorker' in navigator && 'PushManager' in window) {
                 console.log('Push notification triggered for reaction on:', link.url);
-                // Requires server-side setup for real notifications
             }
         }
 
@@ -655,100 +691,21 @@
             updateBlockchainBalance();
         }
 
-        // 3D Globe Enhancements
+        // Original 3D Globe
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(300, 300);
-        const globeContainer = document.getElementById('globeContainer');
-        globeContainer.appendChild(renderer.domElement);
-
-        // Earth Texture (simplified with color for now; use texture URL in production)
-        const geometry = new THREE.SphereGeometry(5, 64, 64);
-        const material = new THREE.MeshPhongMaterial({ 
-            color: 0x00aaff, 
-            specular: 0x222222, 
-            shininess: 100 
-        });
+        document.getElementById('globeContainer').appendChild(renderer.domElement);
+        const geometry = new THREE.SphereGeometry(5, 32, 32);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true });
         const globe = new THREE.Mesh(geometry, material);
         scene.add(globe);
-
-        // Lighting for realism
-        const ambientLight = new THREE.AmbientLight(0x404040);
-        scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-        pointLight.position.set(10, 10, 10);
-        scene.add(pointLight);
-
         camera.position.z = 15;
-        let isDragging = false;
-        let previousMousePosition = { x: 0, y: 0 };
-
-        globeContainer.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            previousMousePosition = { x: e.clientX, y: e.clientY };
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const deltaMove = {
-                    x: e.clientX - previousMousePosition.x,
-                    y: e.clientY - previousMousePosition.y
-                };
-                globe.rotation.y += deltaMove.x * 0.005;
-                globe.rotation.x += deltaMove.y * 0.005;
-                previousMousePosition = { x: e.clientX, y: e.clientY };
-            }
-        });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-
-        globeContainer.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            camera.position.z += e.deltaY * 0.01;
-            camera.position.z = Math.max(8, Math.min(20, camera.position.z));
-        });
-
-        function addGlobeMarker(lat, lon, glow = false) {
-            const phi = (90 - lat) * Math.PI / 180;
-            const theta = (lon + 180) * Math.PI / 180;
-            const radius = 5.1;
-            const x = radius * Math.sin(phi) * Math.cos(theta);
-            const y = radius * Math.cos(phi);
-            const z = radius * Math.sin(phi) * Math.sin(theta);
-
-            const markerGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-            const markerMaterial = new THREE.MeshBasicMaterial({ 
-                color: glow ? 0xffff00 : 0xff0000 
-            });
-            const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-            marker.position.set(x, y, z);
-            scene.add(marker);
-
-            if (glow) {
-                const glowGeometry = new THREE.SphereGeometry(0.2, 16, 16);
-                const glowMaterial = new THREE.MeshBasicMaterial({ 
-                    color: 0xffff00, 
-                    transparent: true, 
-                    opacity: 0.5 
-                });
-                const glowSphere = new THREE.Mesh(glowGeometry, glowMaterial);
-                glowSphere.position.set(x, y, z);
-                scene.add(glowSphere);
-            }
-        }
-
-        function updateGlobeMarkers() {
-            scene.children = scene.children.filter(child => child === globe || child.type === 'AmbientLight' || child.type === 'PointLight');
-            users.filter(u => u.active).forEach(user => {
-                addGlobeMarker(user.lat, user.lon);
-            });
-        }
 
         function animate() {
             requestAnimationFrame(animate);
+            globe.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
         animate();
