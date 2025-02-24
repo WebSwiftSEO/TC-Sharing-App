@@ -21,6 +21,11 @@
             display: flex; 
             flex-direction: column; 
             min-height: 100vh; 
+            transition: background-color 0.3s, color 0.3s; 
+        }
+        .light-mode { 
+            background-color: #f0f0f0; 
+            color: #333; 
         }
         header { 
             background-color: #1a1a1a; 
@@ -60,6 +65,7 @@
             border: 1px solid #00ffcc; 
             border-radius: 5px; 
             padding: 0.5rem; 
+            z-index: 100; 
         }
         #menu button { 
             display: block; 
@@ -97,6 +103,7 @@
             max-width: 300px; 
             height: 300px; 
             margin: 0 auto; 
+            cursor: grab; 
         }
         input[type="text"], input[type="number"], input[type="password"] { 
             width: 80%; 
@@ -116,10 +123,25 @@
             background-color: #00ffcc; 
             color: #0d0d0d; 
             transition: background-color 0.3s, transform 0.2s; 
+            position: relative; 
         }
         button:hover { 
             background-color: #ffd700; 
             transform: scale(1.1); 
+        }
+        button:hover::after { 
+            content: attr(data-tooltip); 
+            position: absolute; 
+            bottom: 100%; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: #333; 
+            color: #fff; 
+            padding: 0.3rem; 
+            border-radius: 3px; 
+            font-size: 0.8rem; 
+            white-space: nowrap; 
+            z-index: 10; 
         }
         .link-item { 
             margin: 0.5rem 0; 
@@ -182,9 +204,10 @@
             display: flex; 
             justify-content: center; 
             margin: 1rem 0; 
+            flex-wrap: wrap; 
         }
         .tab-buttons button { 
-            margin: 0 0.5rem; 
+            margin: 0.5rem; 
         }
         #tWheel { 
             margin: 1rem 0; 
@@ -241,10 +264,17 @@
         #connectWalletBtn { 
             background: linear-gradient(45deg, #ff6b6b, #4ecdc4); 
         }
+        #modeToggle { 
+            position: fixed; 
+            top: 1rem; 
+            left: 1rem; 
+            background: #00ffcc; 
+        }
     </style>
 </head>
 <body>
     <header>
+        <button id="modeToggle" onclick="toggleMode()" data-tooltip="Toggle Dark/Light Mode">🌙</button>
         <h1 id="shareLogo">🚀 Tc App</h1>
         <button id="menuBtn">☰</button>
         <div id="menu">
@@ -264,50 +294,50 @@
             <h2>Login</h2>
             <input type="text" id="loginUsername" placeholder="Username">
             <input type="password" id="loginPassword" placeholder="Password">
-            <button onclick="login()">Login</button>
+            <button onclick="login()" data-tooltip="Sign in to your account">Login</button>
             <div class="auth-toggle" onclick="showSignup()">Need an account? Sign up</div>
         </div>
         <div id="signupForm" style="display: none;">
             <h2>Sign Up</h2>
             <input type="text" id="signupUsername" placeholder="Username">
             <input type="password" id="signupPassword" placeholder="Password">
-            <button onclick="signup()">Sign Up</button>
+            <button onclick="signup()" data-tooltip="Create a new account">Sign Up</button>
             <div class="auth-toggle" onclick="showLogin()">Already have an account? Login</div>
         </div>
     </main>
 
     <main id="mainScreen" class="hidden">
         <div class="tab-buttons">
-            <button onclick="showFeed('home')">Home</button>
-            <button onclick="showFeed('trending')">Trending</button>
-            <button onclick="showFeed('groups')">Groups</button>
-            <button onclick="showFeed('comedy')">Comedy</button>
+            <button onclick="showFeed('home')" data-tooltip="Chronological posts">Home</button>
+            <button onclick="showFeed('trending')" data-tooltip="Top reacted posts">Trending</button>
+            <button onclick="showFeed('groups')" data-tooltip="Interest-based groups">Groups</button>
+            <button onclick="showFeed('comedy')" data-tooltip="Funny content">Comedy</button>
         </div>
         <div id="feed" class="feed">
             <div id="globeContainer"></div>
             <div id="tokenStats">Tokens: <span id="userTokens">0</span> | Active Users: <span id="activeUsers">1</span> | Blockchain Balance: <span id="blockchainBalance">0</span></div>
             <input type="text" id="linkInput" placeholder="Share a link...">
-            <button onclick="submitLink()">Submit</button>
+            <button onclick="submitLink()" data-tooltip="Post a link">Submit</button>
             <div id="tWheel">
-                <button onclick="spinTWheel()">Spin T-Wheel</button>
+                <button onclick="spinTWheel()" data-tooltip="Spin for tokens">Spin T-Wheel</button>
             </div>
             <div id="linksContainer"></div>
         </div>
-        <button id="infoBtn" onclick="showInfo()">ℹ️ Info</button>
+        <button id="infoBtn" onclick="showInfo()" data-tooltip="App information">ℹ️ Info</button>
         <div id="infoPopup">
             <h3>Tc App</h3>
             <p>A decentralized social platform with blockchain integration! Share links, earn Troanary Tokens, and connect with others!</p>
-            <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
+            <p>Interact with the globe, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
             <button onclick="hideInfo()">Close</button>
         </div>
     </main>
 
     <div id="walletContainer">
-        <button id="connectWalletBtn" onclick="connectWallet()">Connect Wallet</button>
+        <button id="connectWalletBtn" onclick="connectWallet()" data-tooltip="Link your MetaMask wallet">Connect Wallet</button>
     </div>
     <div id="searchContainer">
         <input type="text" id="searchInput" placeholder="Search the Tc Universe...">
-        <button id="searchBtn" onclick="searchLinks()">🔍</button>
+        <button id="searchBtn" onclick="searchLinks()" data-tooltip="Search posts">🔍</button>
     </div>
 
     <script>
@@ -343,7 +373,7 @@
                 }).then(() => console.log('Shared successfully'))
                   .catch(err => console.log('Error sharing:', err));
             } else {
-                alert('Native sharing not supported on this device. Copy this URL: ' + window.location.href);
+                alert('Native sharing not supported. Copy this URL: ' + window.location.href);
             }
         });
 
@@ -372,7 +402,7 @@
             }
         }
 
-        // Dynamic Token Supply Simulation (Client-side for demo)
+        // Dynamic Token Supply Simulation
         function adjustSupply(newMemberCount) {
             const oldMemberCount = users.filter(u => u.active).length;
             if (newMemberCount > oldMemberCount) {
@@ -382,7 +412,6 @@
                 totalSupply -= (oldMemberCount - newMemberCount) * 100;
                 console.log(`Burned ${(oldMemberCount - newMemberCount) * 100} tokens. New supply: ${totalSupply}`);
             }
-            // In production, this would call a smart contract function via web3.eth.sendTransaction
         }
 
         // Menu Toggle
@@ -407,10 +436,20 @@
             const password = document.getElementById('signupPassword').value.trim();
             if (!username || !password) return alert('Please enter both username and password!');
             if (users.find(u => u.name === username)) return alert('Username already exists!');
-            currentUser = { name: username, password: password, tokens: 0, active: true, friends: [], profileLinks: [] };
+            currentUser = { 
+                name: username, 
+                password: password, 
+                tokens: 0, 
+                active: true, 
+                friends: [], 
+                profileLinks: [], 
+                lat: Math.random() * 180 - 90, // Random lat/lon for demo
+                lon: Math.random() * 360 - 180 
+            };
             users.push(currentUser);
             adjustSupply(users.filter(u => u.active).length);
             switchToMainScreen();
+            updateGlobeMarkers();
         }
 
         function login() {
@@ -419,8 +458,10 @@
             if (!username || !password) return alert('Please enter both username and password!');
             currentUser = users.find(u => u.name === username && u.password === password);
             if (!currentUser) return alert('Invalid username or password!');
+            currentUser.active = true;
             adjustSupply(users.filter(u => u.active).length);
             switchToMainScreen();
+            updateGlobeMarkers();
         }
 
         function logout() {
@@ -431,6 +472,7 @@
             document.getElementById('authScreen').classList.remove('hidden');
             document.getElementById('menu').style.display = 'none';
             showLogin();
+            updateGlobeMarkers();
         }
 
         function switchToMainScreen() {
@@ -458,11 +500,12 @@
         }
 
         function showTokens() {
-            alert(`Your Troanary Tokens: ${currentUser.tokens}\nTotal Supply: ${totalSupply}\nLeaderboard coming soon!`);
+            let leaderboard = users.map(u => `${u.name}: ${u.tokens}`).join('\n');
+            alert(`Your Tokens: ${currentUser.tokens}\nTotal Supply: ${totalSupply}\nLeaderboard:\n${leaderboard}`);
         }
 
         function showSettings() {
-            alert('Settings: Coming soon!');
+            alert('Settings: Coming soon! (e.g., Event Calendar)');
         }
 
         // Link Submission & Search
@@ -481,29 +524,50 @@
                 owner: currentUser.name,
                 timestamp: Date.now(),
                 reactions: { love: 0, pass: 0, maybe: 0 },
-                feed: currentFeed === 'groups' ? (prompt('Enter group name') || 'General') : currentFeed
+                feed: currentFeed === 'groups' ? (prompt('Enter group name') || 'General') : currentFeed,
+                id: Date.now() + Math.random() // Unique ID for editing/deleting
             };
             links.unshift(newLink);
             currentUser.profileLinks.push(newLink);
             updateTokenStats();
             displayFeed();
             document.getElementById('linkInput').value = '';
+            addGlobeMarker(currentUser.lat, currentUser.lon, true); // Glow for new post
         }
 
         async function calculateLinkReward(url) {
-            return Math.floor(Math.random() * 10) + 1; // Random 1-10 tokens
+            return Math.floor(Math.random() * 10) + 1;
         }
 
         async function fetchLinkMetadata(url) {
+            // Simulated metadata; use a real API in production
             return {
-                image: url.includes('image') ? 'https://via.placeholder.com/150' : null,
-                title: url.includes('example') ? 'Example Page' : null
+                image: url.includes('image') || Math.random() > 0.5 ? 'https://via.placeholder.com/150' : null,
+                title: url.includes('example') ? 'Example Page' : (url.split('/').pop() || 'Link Preview')
             };
         }
 
         function searchLinks() {
             const query = document.getElementById('searchInput').value.trim().toLowerCase();
             displayFeed(query);
+        }
+
+        function editLink(linkId) {
+            const link = links.find(l => l.id === linkId);
+            if (link.owner !== currentUser.name) return alert('You can only edit your own links!');
+            const newUrl = prompt('Edit link URL:', link.url);
+            if (newUrl) {
+                link.url = newUrl;
+                link.text = newUrl.split('/').pop() || 'Edited Link';
+                displayFeed();
+            }
+        }
+
+        function deleteLink(linkId) {
+            if (links.find(l => l.id === linkId).owner !== currentUser.name) return alert('You can only delete your own links!');
+            links = links.filter(l => l.id !== linkId);
+            currentUser.profileLinks = currentUser.profileLinks.filter(l => l.id !== linkId);
+            displayFeed();
         }
 
         // Feed Display
@@ -531,9 +595,13 @@
                 linkElement.innerHTML = `
                     ${content}
                     <div class="reactions">
-                        <button onclick="reactToLink(${index}, 'love')">❤️ ${link.reactions.love}</button>
-                        <button onclick="reactToLink(${index}, 'pass')">🚫 ${link.reactions.pass}</button>
-                        <button onclick="reactToLink(${index}, 'maybe')">🤔 ${link.reactions.maybe}</button>
+                        <button onclick="reactToLink(${index}, 'love')" data-tooltip="Love this post">❤️ ${link.reactions.love}</button>
+                        <button onclick="reactToLink(${index}, 'pass')" data-tooltip="Pass on this">🚫 ${link.reactions.pass}</button>
+                        <button onclick="reactToLink(${index}, 'maybe')" data-tooltip="Maybe later">🤔 ${link.reactions.maybe}</button>
+                        ${link.owner === currentUser.name ? `
+                            <button onclick="editLink(${link.id})" data-tooltip="Edit your link">✏️</button>
+                            <button onclick="deleteLink(${link.id})" data-tooltip="Delete your link">🗑️</button>
+                        ` : ''}
                     </div>
                     <span>By: ${link.owner} | ${new Date(link.timestamp).toLocaleTimeString()}</span>
                 `;
@@ -544,18 +612,30 @@
         function reactToLink(index, reaction) {
             const link = links[index];
             link.reactions[reaction]++;
-            currentUser.tokens += 1; // 1 token per reaction
+            currentUser.tokens += 1;
             updateTokenStats();
             displayFeed();
-            if (Math.random() < 0.2) spinTWheel(); // 20% chance to trigger T-Wheel
+            if (Math.random() < 0.2) spinTWheel();
+            // Push notification placeholder
+            if ('serviceWorker' in navigator && 'PushManager' in window) {
+                console.log('Push notification triggered for reaction on:', link.url);
+                // Requires server-side setup for real notifications
+            }
         }
 
         // T-Wheel
         function spinTWheel() {
-            const reward = Math.floor(Math.random() * 20) + 1; // 1-20 tokens
+            const rewards = [1, 5, 10, 20, 50];
+            const reward = rewards[Math.floor(Math.random() * rewards.length)];
             currentUser.tokens += reward;
             updateTokenStats();
             alert(`T-Wheel Spun! You won ${reward} Troanary Tokens!`);
+        }
+
+        // UI/UX Enhancements
+        function toggleMode() {
+            document.body.classList.toggle('light-mode');
+            document.getElementById('modeToggle').textContent = document.body.classList.contains('light-mode') ? '🌞' : '🌙';
         }
 
         // Info Popup
@@ -575,21 +655,100 @@
             updateBlockchainBalance();
         }
 
-        // 3D Globe
+        // 3D Globe Enhancements
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(300, 300);
-        document.getElementById('globeContainer').appendChild(renderer.domElement);
-        const geometry = new THREE.SphereGeometry(5, 32, 32);
-        const material = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true });
+        const globeContainer = document.getElementById('globeContainer');
+        globeContainer.appendChild(renderer.domElement);
+
+        // Earth Texture (simplified with color for now; use texture URL in production)
+        const geometry = new THREE.SphereGeometry(5, 64, 64);
+        const material = new THREE.MeshPhongMaterial({ 
+            color: 0x00aaff, 
+            specular: 0x222222, 
+            shininess: 100 
+        });
         const globe = new THREE.Mesh(geometry, material);
         scene.add(globe);
+
+        // Lighting for realism
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(10, 10, 10);
+        scene.add(pointLight);
+
         camera.position.z = 15;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        globeContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaMove = {
+                    x: e.clientX - previousMousePosition.x,
+                    y: e.clientY - previousMousePosition.y
+                };
+                globe.rotation.y += deltaMove.x * 0.005;
+                globe.rotation.x += deltaMove.y * 0.005;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        globeContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            camera.position.z += e.deltaY * 0.01;
+            camera.position.z = Math.max(8, Math.min(20, camera.position.z));
+        });
+
+        function addGlobeMarker(lat, lon, glow = false) {
+            const phi = (90 - lat) * Math.PI / 180;
+            const theta = (lon + 180) * Math.PI / 180;
+            const radius = 5.1;
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.cos(phi);
+            const z = radius * Math.sin(phi) * Math.sin(theta);
+
+            const markerGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+            const markerMaterial = new THREE.MeshBasicMaterial({ 
+                color: glow ? 0xffff00 : 0xff0000 
+            });
+            const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+            marker.position.set(x, y, z);
+            scene.add(marker);
+
+            if (glow) {
+                const glowGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+                const glowMaterial = new THREE.MeshBasicMaterial({ 
+                    color: 0xffff00, 
+                    transparent: true, 
+                    opacity: 0.5 
+                });
+                const glowSphere = new THREE.Mesh(glowGeometry, glowMaterial);
+                glowSphere.position.set(x, y, z);
+                scene.add(glowSphere);
+            }
+        }
+
+        function updateGlobeMarkers() {
+            scene.children = scene.children.filter(child => child === globe || child.type === 'AmbientLight' || child.type === 'PointLight');
+            users.filter(u => u.active).forEach(user => {
+                addGlobeMarker(user.lat, user.lon);
+            });
+        }
 
         function animate() {
             requestAnimationFrame(animate);
-            globe.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
         animate();
