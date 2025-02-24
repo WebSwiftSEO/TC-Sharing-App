@@ -399,41 +399,26 @@
             margin-right: 0.5rem;
             object-fit: cover;
         }
-        #bottomAnimation {
+        #animationContainer {
             width: 100%;
             max-width: 600px;
             height: clamp(100px, 20vw, 150px);
             margin: 2rem auto;
             position: relative;
             z-index: 1;
-            overflow: hidden;
         }
-        .neon-grid {
+        .particle {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, rgba(0, 255, 204, 0.1), rgba(255, 215, 0, 0.1));
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .neon-grid::before {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 5px;
+            height: 5px;
             background: #00ffcc;
-            animation: neonPulse 2s infinite alternate, gridMove 4s infinite linear;
-            box-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc;
             border-radius: 50%;
+            animation: particleMove 5s infinite linear;
+            opacity: 0.8;
         }
-        @keyframes neonPulse {
-            from { box-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc, 0 0 15px #00ffcc; }
-            to { box-shadow: 0 0 10px #00ffcc, 0 0 20px #00ffcc, 0 0 30px #00ffcc; }
-        }
-        @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(100%, 100%) rotate(360deg); }
+        @keyframes particleMove {
+            0% { transform: translate(0, 0); opacity: 0.8; }
+            100% { transform: translate(100%, 100%) rotate(360deg); opacity: 0; }
         }
         @media (max-width: 600px) {
             #linkInputContainer { flex-direction: column; }
@@ -441,7 +426,6 @@
             button { width: 100%; max-width: 300px; }
             .feed { padding: 0.5rem; }
             #globeContainer { max-width: 200px; height: 200px; }
-            #bottomAnimation { max-width: 100%; height: clamp(80px, 15vw, 100px); }
             .profile-pic { width: 40px; height: 40px; }
         }
     </style>
@@ -521,7 +505,7 @@
             <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
             <button onclick="hideInfo()">Close</button>
         </div>
-        <div id="bottomAnimation"></div>
+        <div id="animationContainer"></div>
     </main>
 
     <div id="walletContainer">
@@ -549,6 +533,7 @@
         let accounts = [];
         let totalSupply = 1000 * 100;
         let deferredPrompt;
+        let animationLoaded = false;
 
         // Lazy Load Scripts
         function loadScript(url, callback) {
@@ -725,6 +710,7 @@
             updateTokenStats();
             showFeed('home');
             lazyLoadGlobe();
+            lazyLoadAnimation();
         }
 
         // Feed Navigation
@@ -733,10 +719,12 @@
             document.getElementById('feed').style.display = feedType !== 'family' ? 'block' : 'none';
             document.getElementById('familyTreeContainer').style.display = feedType === 'family' ? 'block' : 'none';
             document.getElementById('linkInputContainer').style.display = feedType === 'home' || feedType === 'comedy' || feedType === 'groups' || feedType === 'family' ? 'flex' : 'none';
+            document.getElementById('animationContainer').style.display = feedType !== 'family' ? 'block' : 'none';
             if (feedType === 'family') {
                 displayFamilyTree();
             } else {
                 displayFeed();
+                loadFeedAnimation(feedType);
             }
         }
 
@@ -1001,6 +989,95 @@
                 };
                 globeLoaded = true;
             });
+        }
+
+        // Lazy Load Animation for Home (Neon Particle Stream)
+        let animationLoaded = false;
+        function lazyLoadAnimation() {
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !animationLoaded && currentFeed !== 'family') {
+                        const container = document.getElementById('animationContainer');
+                        const particles = [];
+                        const particleCount = 50; // Reduced for mobile performance
+
+                        for (let i = 0; i < particleCount; i++) {
+                            const particle = document.createElement('div');
+                            particle.className = 'particle';
+                            particle.style.left = Math.random() * 100 + 'vw';
+                            particle.style.top = Math.random() * 100 + 'vh';
+                            container.appendChild(particle);
+                            particles.push(particle);
+                        }
+
+                        animationLoaded = true;
+                        observer.disconnect();
+                    }
+                });
+            }, { threshold: 0.1 });
+            observer.observe(document.getElementById('animationContainer'));
+        }
+
+        function loadFeedAnimation(feedType) {
+            // Placeholder for other feeds (implement similarly with CSS/canvas)
+            const container = document.getElementById('animationContainer');
+            container.innerHTML = ''; // Clear previous animation
+            if (feedType === 'home') {
+                // Already handled by lazyLoadAnimation
+            } else if (feedType === 'trending') {
+                // Orbiting Rings (CSS)
+                container.innerHTML = `
+                    <div style="position: relative; width: 100%; height: 100%;">
+                        <div style="position: absolute; width: 100px; height: 100px; border: 2px solid #00ffcc; border-radius: 50%; animation: orbit 3s infinite linear;"></div>
+                        <div style="position: absolute; width: 150px; height: 150px; border: 2px solid #ffd700; border-radius: 50%; animation: orbit 4s infinite linear;"></div>
+                        <div style="position: absolute; width: 200px; height: 200px; border: 2px solid #ff6b6b; border-radius: 50%; animation: orbit 5s infinite linear;"></div>
+                    </div>
+                `;
+                container.style.display = 'block';
+            } else if (feedType === 'groups') {
+                // Magnetic Dot Grid (CSS)
+                container.innerHTML = `
+                    <div style="position: relative; width: 100%; height: 100%; display: flex; flex-wrap: wrap;">
+                        ${Array(20).fill().map(() => `
+                            <div style="width: 5%; height: 5%; background: #00ffcc; border-radius: 50%; margin: 2.5%; transition: transform 0.3s;"></div>
+                        `).join('')}
+                    </div>
+                `;
+                let dots = container.querySelectorAll('div');
+                document.addEventListener('mousemove', (e) => {
+                    dots.forEach(dot => {
+                        const rect = container.getBoundingClientRect();
+                        const dx = e.clientX - (rect.left + dot.offsetLeft + dot.offsetWidth / 2);
+                        const dy = e.clientY - (rect.top + dot.offsetTop + dot.offsetHeight / 2);
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const force = Math.min(20, 100 / (distance + 1));
+                        dot.style.transform = `translate(${dx / force}px, ${dy / force}px)`;
+                    });
+                });
+                container.style.display = 'block';
+            } else if (feedType === 'comedy') {
+                // Bouncing Emoji Animation (CSS)
+                container.innerHTML = `
+                    ${['😂', '😄', '🤣'].map(emoji => `
+                        <div style="position: absolute; font-size: 2rem; color: #ffd700; animation: bounce 2s infinite ease-in-out;">${emoji}</div>
+                    `).join('')}
+                `;
+                let emojis = container.querySelectorAll('div');
+                emojis.forEach((emoji, i) => {
+                    emoji.style.left = Math.random() * 100 + 'vw';
+                    emoji.style.top = Math.random() * 100 + 'vh';
+                });
+                container.style.display = 'block';
+            }
+        }
+
+        @keyframes orbit {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
         }
 
         // Initial Load
