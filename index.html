@@ -57,6 +57,10 @@
             color: #00ffcc; 
             font-size: clamp(1.2rem, 3vw, 1.5rem); 
             cursor: pointer; 
+            transition: transform 0.3s; 
+        }
+        #menuBtn:hover { 
+            transform: rotate(90deg); 
         }
         #menu { 
             display: none; 
@@ -80,9 +84,11 @@
             padding: 0.5rem; 
             cursor: pointer; 
             font-size: clamp(0.9rem, 2.5vw, 1rem); 
+            transition: color 0.3s, text-shadow 0.3s; 
         }
         #menu button:hover { 
             color: #ffd700; 
+            text-shadow: 0 0 5px #ffd700; 
         }
         main { 
             padding: 5rem 1rem 1rem; 
@@ -177,6 +183,10 @@
             text-decoration: none; 
             word-break: break-all; 
             font-size: clamp(0.9rem, 2.5vw, 1rem); 
+            transition: color 0.3s; 
+        }
+        .link-item a:hover { 
+            color: #ffd700; 
         }
         .link-item img { 
             max-width: 100%; 
@@ -207,6 +217,7 @@
             cursor: pointer; 
             margin-top: 0.5rem; 
             font-size: clamp(0.9rem, 2.5vw, 1rem); 
+            transition: color 0.3s; 
         }
         .auth-toggle:hover { 
             color: #ffd700; 
@@ -234,6 +245,10 @@
         }
         .tab-buttons button { 
             margin: 0; 
+            transition: all 0.3s; 
+        }
+        .tab-buttons button:hover { 
+            box-shadow: 0 0 10px #00ffcc; 
         }
         #tWheel { 
             margin: 1rem 0; 
@@ -326,16 +341,8 @@
         }
         .social-icon:hover { 
             color: #ffd700; 
-            transform: scale(1.2); 
+            transform: scale(1.2) rotate(5deg); 
             text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 30px #ffd700; 
-        }
-        #particleWaveContainer { 
-            width: 100%; 
-            max-width: 600px; 
-            height: clamp(200px, 50vw, 300px); 
-            margin: 2rem auto; 
-            position: relative; 
-            z-index: 1; 
         }
         #installBtn {
             margin-top: 1rem;
@@ -371,13 +378,21 @@
             justify-content: space-between;
             align-items: center;
         }
+        #animationContainer { 
+            width: 100%; 
+            max-width: 600px; 
+            height: clamp(200px, 50vw, 300px); 
+            margin: 2rem auto; 
+            position: relative; 
+            z-index: 1; 
+        }
         @media (max-width: 600px) {
             #linkInputContainer { flex-direction: column; }
             input[type="text"], input[type="number"], input[type="password"] { width: 100%; max-width: none; }
             button { width: 100%; max-width: 300px; }
             .feed { padding: 0.5rem; }
             #globeContainer { max-width: 200px; height: 200px; }
-            #particleWaveContainer { max-width: 100%; }
+            #animationContainer { max-width: 100%; }
         }
     </style>
 </head>
@@ -450,7 +465,7 @@
             <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
             <button onclick="hideInfo()">Close</button>
         </div>
-        <div id="particleWaveContainer"></div>
+        <div id="animationContainer"></div>
     </main>
 
     <div id="walletContainer">
@@ -478,6 +493,8 @@
         let accounts = [];
         let totalSupply = 1000 * 100;
         let deferredPrompt;
+        let animationLoaded = false;
+        let currentAnimation = null;
 
         // Lazy Load Scripts
         function loadScript(url, callback) {
@@ -608,7 +625,7 @@
                 active: true, 
                 friends: [], 
                 profileLinks: [], 
-                family: [], // Family members array
+                family: [],
                 lat: Math.random() * 180 - 90,
                 lon: Math.random() * 360 - 180 
             };
@@ -644,7 +661,7 @@
             updateTokenStats();
             showFeed('home');
             lazyLoadGlobe();
-            lazyLoadParticles();
+            lazyLoadAnimation();
         }
 
         // Feed Navigation
@@ -653,10 +670,12 @@
             document.getElementById('feed').style.display = feedType !== 'family' ? 'block' : 'none';
             document.getElementById('familyTreeContainer').style.display = feedType === 'family' ? 'block' : 'none';
             document.getElementById('linkInputContainer').style.display = feedType === 'home' || feedType === 'comedy' || feedType === 'groups' || feedType === 'family' ? 'flex' : 'none';
+            document.getElementById('animationContainer').style.display = feedType !== 'family' ? 'block' : 'none';
             if (feedType === 'family') {
                 displayFamilyTree();
             } else {
                 displayFeed();
+                loadFeedAnimation(feedType);
             }
         }
 
@@ -909,79 +928,239 @@
             });
         }
 
-        // Lazy Load Particle Wave
-        let particlesLoaded = false;
-        function lazyLoadParticles() {
+        // Lazy Load Feed Animations
+        function lazyLoadAnimation() {
             const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting && !particlesLoaded) {
+                    if (entry.isIntersecting && !animationLoaded) {
                         loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () => {
-                            const particleScene = new THREE.Scene();
-                            const particleCamera = new THREE.PerspectiveCamera(75, 600 / 300, 0.1, 1000);
-                            const particleRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                            particleRenderer.setSize(600, 300);
-                            document.getElementById('particleWaveContainer').appendChild(particleRenderer.domElement);
-
-                            const particles = [];
-                            const particleCount = 1000;
-                            const gridSize = 20;
-                            const geometryParticles = new THREE.BufferGeometry();
-                            const positions = new Float32Array(particleCount * 3);
-                            const colors = new Float32Array(particleCount * 3);
-
-                            for (let i = 0; i < particleCount; i++) {
-                                const x = (i % gridSize) - gridSize / 2;
-                                const z = Math.floor(i / gridSize) - gridSize / 2;
-                                const y = 0;
-                                positions[i * 3] = x;
-                                positions[i * 3 + 1] = y;
-                                positions[i * 3 + 2] = z;
-                                colors[i * 3] = 0;
-                                colors[i * 3 + 1] = 1;
-                                colors[i * 3 + 2] = 1;
-                                particles.push({ x, y, z, baseY: y });
-                            }
-
-                            geometryParticles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                            geometryParticles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-                            const materialParticles = new THREE.PointsMaterial({ size: 0.2, vertexColors: true });
-                            const particleSystem = new THREE.Points(geometryParticles, materialParticles);
-                            particleScene.add(particleSystem);
-
-                            particleCamera.position.z = 15;
-
-                            let mouseX = 0, mouseY = 0;
-                            document.addEventListener('mousemove', (e) => {
-                                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-                                mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-                            });
-
-                            function animateParticles() {
-                                requestAnimationFrame(animateParticles);
-                                const positions = particleSystem.geometry.attributes.position.array;
-                                for (let i = 0; i < particleCount; i++) {
-                                    const particle = particles[i];
-                                    const distX = particle.x - mouseX * 10;
-                                    const distZ = particle.z - mouseY * 10;
-                                    const distance = Math.sqrt(distX * distX + distZ * distZ);
-                                    particle.y = Math.sin(Date.now() * 0.001 + distance * 0.2) * 2;
-                                    positions[i * 3 + 1] = particle.y;
-                                }
-                                particleSystem.geometry.attributes.position.needsUpdate = true;
-                                particleRenderer.render(particleScene, particleCamera);
-                            }
-                            animateParticles();
-                            particlesLoaded = true;
+                            loadFeedAnimation(currentFeed);
+                            animationLoaded = true;
                             observer.disconnect();
                         });
                     }
                 });
             }, { threshold: 0.1 });
-            observer.observe(document.getElementById('particleWaveContainer'));
+            observer.observe(document.getElementById('animationContainer'));
         }
 
-        // Initial Load
-        if (currentUser) loadFamilyTree();
+        function loadFeedAnimation(feedType) {
+            const container = document.getElementById('animationContainer');
+            container.innerHTML = ''; // Clear previous animation
+            if (currentAnimation) {
+                currentAnimation = null; // Reset previous animation
+            }
+
+            if (feedType === 'home') {
+                // Starfield Animation
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, 600 / 300, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(600, 300);
+                container.appendChild(renderer.domElement);
+
+                const stars = [];
+                const starCount = 500;
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(starCount * 3);
+                for (let i = 0; i < starCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 100;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 100;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+                    stars.push({ z: positions[i * 3 + 2] });
+                }
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const material = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 });
+                const starField = new THREE.Points(geometry, material);
+                scene.add(starField);
+
+                camera.position.z = 50;
+
+                function animateStars() {
+                    requestAnimationFrame(animateStars);
+                    const positions = starField.geometry.attributes.position.array;
+                    for (let i = 0; i < starCount; i++) {
+                        stars[i].z -= 0.5;
+                        if (stars[i].z < -50) stars[i].z = 50;
+                        positions[i * 3 + 2] = stars[i].z;
+                    }
+                    starField.geometry.attributes.position.needsUpdate = true;
+                    renderer.render(scene, camera);
+                }
+                animateStars();
+                currentAnimation = animateStars;
+
+            } else if (feedType === 'trending') {
+                // 3D Orbital System
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, 600 / 300, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(600, 300);
+                container.appendChild(renderer.domElement);
+
+                const core = new THREE.Mesh(
+                    new THREE.SphereGeometry(2, 32, 32),
+                    new THREE.MeshBasicMaterial({ color: 0xffd700 })
+                );
+                scene.add(core);
+
+                const planets = [
+                    { radius: 0.5, distance: 5, speed: 0.02, color: 0x00ffcc, info: `Total Users: ${users.length}` },
+                    { radius: 0.3, distance: 7, speed: 0.015, color: 0xff6b6b, info: `Token Supply: ${totalSupply}` },
+                    { radius: 0.4, distance: 9, speed: 0.01, color: 0x4ecdc4, info: 'Trending Now!' }
+                ];
+                const planetMeshes = planets.map(p => {
+                    const mesh = new THREE.Mesh(
+                        new THREE.SphereGeometry(p.radius, 16, 16),
+                        new THREE.MeshBasicMaterial({ color: p.color })
+                    );
+                    mesh.userData = { info: p.info };
+                    scene.add(mesh);
+                    return { mesh, ...p, angle: Math.random() * Math.PI * 2 };
+                });
+
+                camera.position.z = 15;
+
+                function animateOrbit() {
+                    requestAnimationFrame(animateOrbit);
+                    planetMeshes.forEach(p => {
+                        p.angle += p.speed;
+                        p.mesh.position.x = Math.cos(p.angle) * p.distance;
+                        p.mesh.position.z = Math.sin(p.angle) * p.distance;
+                    });
+                    renderer.render(scene, camera);
+                }
+                animateOrbit();
+                currentAnimation = animateOrbit;
+
+                renderer.domElement.addEventListener('click', (e) => {
+                    const raycaster = new THREE.Raycaster();
+                    const mouse = new THREE.Vector2();
+                    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                    raycaster.setFromCamera(mouse, camera);
+                    const intersects = raycaster.intersectObjects(planetMeshes.map(p => p.mesh));
+                    if (intersects.length > 0) {
+                        alert(intersects[0].object.userData.info);
+                    }
+                });
+
+            } else if (feedType === 'groups') {
+                // Magnetic Particles
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, 600 / 300, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(600, 300);
+                container.appendChild(renderer.domElement);
+
+                const particles = [];
+                const particleCount = 200;
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 20;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+                    particles.push({ x: positions[i * 3], y: positions[i * 3 + 1], z: positions[i * 3 + 2], vx: 0, vy: 0, vz: 0 });
+                }
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const material = new THREE.PointsMaterial({ color: 0x00ffcc, size: 0.3 });
+                const particleSystem = new THREE.Points(geometry, material);
+                scene.add(particleSystem);
+
+                camera.position.z = 15;
+
+                let mouseX = 0, mouseY = 0;
+                document.addEventListener('mousemove', (e) => {
+                    mouseX = (e.clientX / window.innerWidth) * 20 - 10;
+                    mouseY = -(e.clientY / window.innerHeight) * 10 + 5;
+                });
+
+                function animateMagnetic() {
+                    requestAnimationFrame(animateMagnetic);
+                    const positions = particleSystem.geometry.attributes.position.array;
+                    for (let i = 0; i < particleCount; i++) {
+                        const p = particles[i];
+                        const dx = mouseX - p.x;
+                        const dy = mouseY - p.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const force = Math.min(0.1, 1 / (distance + 1));
+                        p.vx += dx * force;
+                        p.vy += dy * force;
+                        p.vx *= 0.95;
+                        p.vy *= 0.95;
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        positions[i * 3] = p.x;
+                        positions[i * 3 + 1] = p.y;
+                    }
+                    particleSystem.geometry.attributes.position.needsUpdate = true;
+                    renderer.render(scene, camera);
+                }
+                animateMagnetic();
+                currentAnimation = animateMagnetic;
+
+            } else if (feedType === 'comedy') {
+                // Firefly Swarm
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, 600 / 300, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(600, 300);
+                container.appendChild(renderer.domElement);
+
+                const particles = [];
+                const particleCount = 100;
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount; i++) {
+                    positions[i * 3] = (Math.random() - 0.5) * 20;
+                    positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+                    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+                    particles.push({ x: positions[i * 3], y: positions[i * 3 + 1], z: positions[i * 3 + 2], vx: (Math.random() - 0.5) * 0.1, vy: (Math.random() - 0.5) * 0.1, vz: (Math.random() - 0.5) * 0.1 });
+                }
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const material = new THREE.PointsMaterial({ color: 0xffff00, size: 0.5, transparent: true, opacity: 0.8 });
+                const particleSystem = new THREE.Points(geometry, material);
+                scene.add(particleSystem);
+
+                camera.position.z = 15;
+
+                let mouseX = 0, mouseY = 0, isHovering = false;
+                document.addEventListener('mousemove', (e) => {
+                    mouseX = (e.clientX / window.innerWidth) * 20 - 10;
+                    mouseY = -(e.clientY / window.innerHeight) * 10 + 5;
+                    isHovering = e.clientY > window.innerHeight - 300 && e.clientY < window.innerHeight;
+                });
+
+                function animateFireflies() {
+                    requestAnimationFrame(animateFireflies);
+                    const positions = particleSystem.geometry.attributes.position.array;
+                    for (let i = 0; i < particleCount; i++) {
+                        const p = particles[i];
+                        if (isHovering) {
+                            const targetX = i < 50 ? mouseX - 2 : mouseX + 2; // Form "T" and "c"
+                            const targetY = i < 50 ? mouseY + (i % 10 - 5) : mouseY - 2;
+                            p.x += (targetX - p.x) * 0.1;
+                            p.y += (targetY - p.y) * 0.1;
+                        } else {
+                            p.x += p.vx;
+                            p.y += p.vy;
+                            p.z += p.vz;
+                            if (p.x > 10 || p.x < -10) p.vx *= -1;
+                            if (p.y > 5 || p.y < -5) p.vy *= -1;
+                            if (p.z > 10 || p.z < -10) p.vz *= -1;
+                        }
+                        positions[i * 3] = p.x;
+                        positions[i * 3 + 1] = p.y;
+                        positions[i * 3 + 2] = p.z;
+                    }
+                    particleSystem.geometry.attributes.position.needsUpdate = true;
+                    renderer.render(scene, camera);
+                }
+                animateFireflies();
+                currentAnimation = animateFireflies;
+            }
+        }
     </script>
 </body>
 </html>
