@@ -72,7 +72,7 @@
             z-index: 100; 
             max-width: 90vw; 
         }
-        #menu button { 
+        #menu button, #menu a { 
             display: block; 
             width: 100%; 
             text-align: left; 
@@ -81,9 +81,10 @@
             color: #00ffcc; 
             padding: 0.5rem; 
             cursor: pointer; 
+            text-decoration: none; 
             font-size: clamp(0.9rem, 2.5vw, 1rem); 
         }
-        #menu button:hover { 
+        #menu button:hover, #menu a:hover { 
             color: #ffd700; 
         }
         main { 
@@ -443,12 +444,51 @@
             <button onclick="showFeed('family')">Family</button>
             <button onclick="showTokens()">Tokens</button>
             <button onclick="showSettings()">Settings</button>
+            <a href="#" onclick="showLoginForm(); return false;" data-tooltip="Sign in to your account">Login</a>
+            <a href="#" onclick="showSignupForm(); return false;" data-tooltip="Create a new account">Sign Up</a>
             <button onclick="installPWA()" data-tooltip="Install Tc App">Install</button>
-            <button onclick="logout()">Logout</button>
+            <button onclick="logout()" data-tooltip="Sign out of your account">Logout</button>
         </div>
     </header>
 
-    <main id="authScreen">
+    <main id="mainScreen">
+        <div class="tab-buttons">
+            <button onclick="showFeed('home')" data-tooltip="Chronological posts">Home</button>
+            <button onclick="showFeed('trending')" data-tooltip="Top reacted posts">Trending</button>
+            <button onclick="showFeed('groups')" data-tooltip="Interest-based groups">Groups</button>
+            <button onclick="showFeed('comedy')" data-tooltip="Funny content">Comedy</button>
+            <button onclick="showFeed('family')" data-tooltip="Family tree feed">Family</button>
+        </div>
+        <div id="feed" class="feed">
+            <div id="globeContainer"></div>
+            <div id="tokenStats">Tokens: <span id="userTokens">0</span> | Active Users: <span id="activeUsers">1</span> | Blockchain Balance: <span id="blockchainBalance">0</span></div>
+            <div id="linkInputContainer">
+                <input type="text" id="linkInput" placeholder="Share a link..." disabled>
+                <button onclick="submitLink()" data-tooltip="Post a link" disabled>Submit</button>
+            </div>
+            <div id="tWheel">
+                <button onclick="spinTWheel()" data-tooltip="Spin for tokens" disabled>Spin T-Wheel</button>
+            </div>
+            <div id="linksContainer"></div>
+        </div>
+        <div id="familyTreeContainer" style="display: none;">
+            <h3>Family Tree 🌳</h3>
+            <input type="text" id="familyMemberInput" placeholder="Add family member (username)" disabled>
+            <button onclick="addFamilyMember()" data-tooltip="Link a relative" disabled>Add Relative</button>
+            <div id="familyTree"></div>
+        </div>
+        <button id="infoBtn" onclick="showInfo()" data-tooltip="App information">ℹ️ Info</button>
+        <button id="installBtn" onclick="installPWA()" data-tooltip="Add Tc App to your device">Install App 📲</button>
+        <div id="infoPopup">
+            <h3>Tc App</h3>
+            <p>A decentralized social platform with blockchain integration! Share links, earn Troanary Tokens, and connect with family forever!</p>
+            <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
+            <button onclick="hideInfo()">Close</button>
+        </div>
+        <div id="animationContainer"></div>
+    </main>
+
+    <div id="authScreen" style="display: none;">
         <div id="loginForm">
             <h2>Login</h2>
             <input type="text" id="loginUsername" placeholder="Username">
@@ -471,45 +511,8 @@
         </div>
     </main>
 
-    <main id="mainScreen" class="hidden">
-        <div class="tab-buttons">
-            <button onclick="showFeed('home')" data-tooltip="Chronological posts">Home</button>
-            <button onclick="showFeed('trending')" data-tooltip="Top reacted posts">Trending</button>
-            <button onclick="showFeed('groups')" data-tooltip="Interest-based groups">Groups</button>
-            <button onclick="showFeed('comedy')" data-tooltip="Funny content">Comedy</button>
-            <button onclick="showFeed('family')" data-tooltip="Family tree feed">Family</button>
-        </div>
-        <div id="feed" class="feed">
-            <div id="globeContainer"></div>
-            <div id="tokenStats">Tokens: <span id="userTokens">0</span> | Active Users: <span id="activeUsers">1</span> | Blockchain Balance: <span id="blockchainBalance">0</span></div>
-            <div id="linkInputContainer">
-                <input type="text" id="linkInput" placeholder="Share a link...">
-                <button onclick="submitLink()" data-tooltip="Post a link">Submit</button>
-            </div>
-            <div id="tWheel">
-                <button onclick="spinTWheel()" data-tooltip="Spin for tokens">Spin T-Wheel</button>
-            </div>
-            <div id="linksContainer"></div>
-        </div>
-        <div id="familyTreeContainer">
-            <h3>Family Tree 🌳</h3>
-            <input type="text" id="familyMemberInput" placeholder="Add family member (username)">
-            <button onclick="addFamilyMember()" data-tooltip="Link a relative">Add Relative</button>
-            <div id="familyTree"></div>
-        </div>
-        <button id="infoBtn" onclick="showInfo()" data-tooltip="App information">ℹ️ Info</button>
-        <button id="installBtn" onclick="installPWA()" data-tooltip="Add Tc App to your device">Install App 📲</button>
-        <div id="infoPopup">
-            <h3>Tc App</h3>
-            <p>A decentralized social platform with blockchain integration! Share links, earn Troanary Tokens, and connect with family forever!</p>
-            <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
-            <button onclick="hideInfo()">Close</button>
-        </div>
-        <div id="animationContainer"></div>
-    </main>
-
     <div id="walletContainer">
-        <button id="connectWalletBtn" onclick="connectWallet()" data-tooltip="Link your MetaMask wallet">Connect Wallet</button>
+        <button id="connectWalletBtn" onclick="connectWallet()" data-tooltip="Link your MetaMask wallet" disabled>Connect Wallet</button>
     </div>
     <div id="searchContainer">
         <input type="text" id="searchInput" placeholder="Search the Tc Universe...">
@@ -574,6 +577,23 @@
             }
         }
 
+        // Show Login/Signup Forms in Menu
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('profileSelect').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'block';
+            document.getElementById('mainScreen').style.display = 'none';
+        }
+
+        function showSignupForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+            document.getElementById('profileSelect').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'block';
+            document.getElementById('mainScreen').style.display = 'none';
+        }
+
         // Native Sharing on Logo Click
         document.getElementById('shareLogo').addEventListener('click', () => {
             if (navigator.share) {
@@ -590,6 +610,10 @@
 
         // Wallet Integration
         function connectWallet() {
+            if (!currentUser) {
+                alert('Please login to connect your wallet.');
+                return;
+            }
             if (!window.ethereum && !web3) {
                 loadScript('https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js', async () => {
                     await connectWalletLogic();
@@ -606,6 +630,7 @@
                     accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                     console.log('Connected account:', accounts[0]);
                     document.getElementById('connectWalletBtn').textContent = `Connected: ${accounts[0].slice(0, 6)}...`;
+                    document.getElementById('connectWalletBtn').disabled = false;
                     updateBlockchainBalance();
                 } catch (error) {
                     console.error('Wallet connection failed:', error);
@@ -635,23 +660,7 @@
             }
         }
 
-        // Menu Toggle
-        document.getElementById('menuBtn').addEventListener('click', () => {
-            const menu = document.getElementById('menu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        });
-
         // Auth Functions
-        function showSignup() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('signupForm').style.display = 'block';
-        }
-
-        function showLogin() {
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('signupForm').style.display = 'none';
-        }
-
         function signup() {
             const username = document.getElementById('signupUsername').value.trim();
             const password = document.getElementById('signupPassword').value.trim();
@@ -664,8 +673,8 @@
                 active: true, 
                 friends: [], 
                 profileLinks: [], 
-                family: [], // Family members array
-                profilePic: 'default.png', // Default profile picture
+                family: [], 
+                profilePic: 'default.png', 
                 lat: Math.random() * 180 - 90,
                 lon: Math.random() * 360 - 180 
             };
@@ -691,26 +700,47 @@
             currentUser.profilePic = `${pic}.png`;
             localStorage.setItem(`user_${currentUser.name}`, JSON.stringify(currentUser));
             document.getElementById('profileSelect').style.display = 'none';
-            switchToMainScreen();
+            document.getElementById('mainScreen').style.display = 'block';
+            document.getElementById('authScreen').style.display = 'none';
+            enableLoggedInFeatures();
         }
 
         function logout() {
+            if (!currentUser) return;
             currentUser.active = false;
             currentUser = null;
             adjustSupply(users.filter(u => u.active).length);
-            document.getElementById('mainScreen').classList.add('hidden');
-            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('mainScreen').style.display = 'block';
+            document.getElementById('authScreen').style.display = 'none';
             document.getElementById('menu').style.display = 'none';
-            showLogin();
+            disableLoggedInFeatures();
+            localStorage.removeItem(`user_${currentUser?.name}`);
         }
 
-        function switchToMainScreen() {
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('mainScreen').classList.remove('hidden');
+        function enableLoggedInFeatures() {
+            document.getElementById('linkInput').disabled = false;
+            document.getElementById('linkInput').placeholder = "Share a link...";
+            document.querySelector('#linkInputContainer button').disabled = false;
+            document.getElementById('tWheel button').disabled = false;
+            document.getElementById('familyMemberInput').disabled = false;
+            document.querySelector('#familyTreeContainer button').disabled = false;
+            document.getElementById('connectWalletBtn').disabled = false;
             updateTokenStats();
-            showFeed('home');
-            lazyLoadGlobe();
-            lazyLoadAnimation();
+            displayFeed();
+        }
+
+        function disableLoggedInFeatures() {
+            document.getElementById('linkInput').disabled = true;
+            document.getElementById('linkInput').placeholder = "Login to share a link...";
+            document.querySelector('#linkInputContainer button').disabled = true;
+            document.getElementById('tWheel button').disabled = true;
+            document.getElementById('familyMemberInput').disabled = true;
+            document.querySelector('#familyTreeContainer button').disabled = true;
+            document.getElementById('connectWalletBtn').disabled = true;
+            document.getElementById('connectWalletBtn').textContent = 'Connect Wallet';
+            document.getElementById('tokenStats').innerHTML = 'Tokens: 0 | Active Users: 1 | Blockchain Balance: 0';
+            document.getElementById('linksContainer').innerHTML = '';
+            document.getElementById('familyTree').innerHTML = '';
         }
 
         // Feed Navigation
@@ -718,17 +748,21 @@
             currentFeed = feedType;
             document.getElementById('feed').style.display = feedType !== 'family' ? 'block' : 'none';
             document.getElementById('familyTreeContainer').style.display = feedType === 'family' ? 'block' : 'none';
-            document.getElementById('linkInputContainer').style.display = feedType === 'home' || feedType === 'comedy' || feedType === 'groups' || feedType === 'family' ? 'flex' : 'none';
-            document.getElementById('animationContainer').style.display = feedType !== 'family' ? 'block' : 'none';
+            document.getElementById('linkInputContainer').style.display = feedType === 'home' || feedType === 'comedy' || feedType === 'groups' || (feedType === 'family' && currentUser) ? 'flex' : 'none';
             if (feedType === 'family') {
-                displayFamilyTree();
+                if (currentUser) {
+                    displayFamilyTree();
+                } else {
+                    document.getElementById('familyTree').innerHTML = '<p>Please login to view your family tree.</p>';
+                }
             } else {
                 displayFeed();
-                loadFeedAnimation(feedType);
             }
+            loadFeedAnimation(feedType);
         }
 
         function showTokens() {
+            if (!currentUser) return alert('Please login to view tokens.');
             let leaderboard = users.map(u => `${u.name}: ${u.tokens}`).join('\n');
             alert(`Your Tokens: ${currentUser.tokens}\nTotal Supply: ${totalSupply}\nLeaderboard:\n${leaderboard}`);
         }
@@ -739,6 +773,7 @@
 
         // Link Submission & Search
         async function submitLink() {
+            if (!currentUser) return alert('Please login to share links.');
             const linkInput = document.getElementById('linkInput').value.trim();
             if (!linkInput) return alert('Enter a link!');
             spinGlobe();
@@ -781,6 +816,7 @@
         }
 
         function editLink(linkId) {
+            if (!currentUser) return alert('Please login to edit links.');
             const link = links.find(l => l.id === linkId);
             if (link.owner !== currentUser.name) return alert('You can only edit your own links!');
             const newUrl = prompt('Edit link URL:', link.url);
@@ -793,6 +829,7 @@
         }
 
         function deleteLink(linkId) {
+            if (!currentUser) return alert('Please login to delete links.');
             if (links.find(l => l.id === linkId).owner !== currentUser.name) return alert('You can only delete your own links!');
             links = links.filter(l => l.id !== linkId);
             currentUser.profileLinks = currentUser.profileLinks.filter(l => l.id !== linkId);
@@ -843,6 +880,7 @@
         }
 
         function reactToLink(index, reaction) {
+            if (!currentUser) return alert('Please login to react to links.');
             const link = links[index];
             link.reactions[reaction]++;
             currentUser.tokens += 1;
@@ -857,6 +895,7 @@
 
         // Family Tree Functions
         function addFamilyMember() {
+            if (!currentUser) return alert('Please login to add family members.');
             const familyUsername = document.getElementById('familyMemberInput').value.trim();
             if (!familyUsername) return alert('Enter a username to add!');
             const relative = users.find(u => u.name === familyUsername && u.active);
@@ -871,6 +910,10 @@
         function displayFamilyTree() {
             const container = document.getElementById('familyTree');
             container.innerHTML = '';
+            if (!currentUser) {
+                container.innerHTML = '<p>Please login to view your family tree.</p>';
+                return;
+            }
             const familyLinks = links.filter(link => link.feed === 'family' && (link.owner === currentUser.name || currentUser.family.includes(link.owner)));
             familyLinks.forEach((link, index) => {
                 const linkElement = document.createElement('div');
@@ -914,18 +957,24 @@
 
         // Load Family Tree from Storage
         function loadFamilyTree() {
-            const storedFamily = localStorage.getItem(`family_${currentUser.name}`);
+            const storedFamily = localStorage.getItem(`family_${currentUser?.name}`);
             if (storedFamily) {
                 currentUser.family = JSON.parse(storedFamily);
             }
-            const storedUser = localStorage.getItem(`user_${currentUser.name}`);
+            const storedUser = localStorage.getItem(`user_${currentUser?.name}`);
             if (storedUser) {
                 currentUser = JSON.parse(storedUser);
+            }
+            if (currentUser) {
+                enableLoggedInFeatures();
+            } else {
+                disableLoggedInFeatures();
             }
         }
 
         // T-Wheel
         function spinTWheel() {
+            if (!currentUser) return alert('Please login to spin the T-Wheel.');
             const rewards = [1, 5, 10, 20, 50];
             const reward = rewards[Math.floor(Math.random() * rewards.length)];
             currentUser.tokens += reward;
@@ -991,25 +1040,13 @@
             });
         }
 
-        // Lazy Load Animation for Home (Neon Particle Stream)
+        // Lazy Load Animation
         let animationLoaded = false;
         function lazyLoadAnimation() {
             const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting && !animationLoaded && currentFeed !== 'family') {
-                        const container = document.getElementById('animationContainer');
-                        const particles = [];
-                        const particleCount = 50; // Reduced for mobile performance
-
-                        for (let i = 0; i < particleCount; i++) {
-                            const particle = document.createElement('div');
-                            particle.className = 'particle';
-                            particle.style.left = Math.random() * 100 + 'vw';
-                            particle.style.top = Math.random() * 100 + 'vh';
-                            container.appendChild(particle);
-                            particles.push(particle);
-                        }
-
+                        loadFeedAnimation(currentFeed);
                         animationLoaded = true;
                         observer.disconnect();
                     }
@@ -1019,11 +1056,19 @@
         }
 
         function loadFeedAnimation(feedType) {
-            // Placeholder for other feeds (implement similarly with CSS/canvas)
             const container = document.getElementById('animationContainer');
             container.innerHTML = ''; // Clear previous animation
             if (feedType === 'home') {
-                // Already handled by lazyLoadAnimation
+                const particles = [];
+                const particleCount = 50; // Reduced for mobile performance
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + 'vw';
+                    particle.style.top = Math.random() * 100 + 'vh';
+                    container.appendChild(particle);
+                    particles.push(particle);
+                }
             } else if (feedType === 'trending') {
                 // Orbiting Rings (CSS)
                 container.innerHTML = `
@@ -1033,7 +1078,6 @@
                         <div style="position: absolute; width: 200px; height: 200px; border: 2px solid #ff6b6b; border-radius: 50%; animation: orbit 5s infinite linear;"></div>
                     </div>
                 `;
-                container.style.display = 'block';
             } else if (feedType === 'groups') {
                 // Magnetic Dot Grid (CSS)
                 container.innerHTML = `
@@ -1054,7 +1098,18 @@
                         dot.style.transform = `translate(${dx / force}px, ${dy / force}px)`;
                     });
                 });
-                container.style.display = 'block';
+                // Touch support for mobile
+                document.addEventListener('touchmove', (e) => {
+                    const touch = e.touches[0];
+                    dots.forEach(dot => {
+                        const rect = container.getBoundingClientRect();
+                        const dx = touch.clientX - (rect.left + dot.offsetLeft + dot.offsetWidth / 2);
+                        const dy = touch.clientY - (rect.top + dot.offsetTop + dot.offsetHeight / 2);
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const force = Math.min(20, 100 / (distance + 1));
+                        dot.style.transform = `translate(${dx / force}px, ${dy / force}px)`;
+                    });
+                });
             } else if (feedType === 'comedy') {
                 // Bouncing Emoji Animation (CSS)
                 container.innerHTML = `
@@ -1067,7 +1122,6 @@
                     emoji.style.left = Math.random() * 100 + 'vw';
                     emoji.style.top = Math.random() * 100 + 'vh';
                 });
-                container.style.display = 'block';
             }
         }
 
@@ -1081,7 +1135,13 @@
         }
 
         // Initial Load
-        if (currentUser) loadFamilyTree();
+        if (currentUser) {
+            enableLoggedInFeatures();
+        } else {
+            disableLoggedInFeatures();
+            document.getElementById('mainScreen').style.display = 'block';
+        }
+        loadFamilyTree();
     </script>
 </body>
 </html>
