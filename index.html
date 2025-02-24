@@ -304,6 +304,14 @@
             transform: scale(1.2); 
             text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 30px #ffd700; 
         }
+        #particleWaveContainer { 
+            width: 100%; 
+            max-width: 600px; 
+            height: 300px; 
+            margin: 2rem auto; 
+            position: relative; 
+            z-index: 1; 
+        }
     </style>
 </head>
 <body>
@@ -366,6 +374,8 @@
             <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
             <button onclick="hideInfo()">Close</button>
         </div>
+        <!-- Particle Wave Animation -->
+        <div id="particleWaveContainer"></div>
     </main>
 
     <div id="walletContainer">
@@ -391,7 +401,7 @@
         let currentFeed = 'home';
         let web3;
         let accounts = [];
-        let totalSupply = 1000 * 100; // Initial supply: 1000 members * 100 tokens
+        let totalSupply = 1000 * 100;
 
         // PWA Setup
         if ('serviceWorker' in navigator) {
@@ -486,7 +496,7 @@
                 active: true, 
                 friends: [], 
                 profileLinks: [], 
-                lat: Math.random() * 180 - 90, // Random lat/lon for demo
+                lat: Math.random() * 180 - 90,
                 lon: Math.random() * 360 - 180 
             };
             users.push(currentUser);
@@ -565,7 +575,7 @@
                 timestamp: Date.now(),
                 reactions: { love: 0, pass: 0, maybe: 0 },
                 feed: currentFeed === 'groups' ? (prompt('Enter group name') || 'General') : currentFeed,
-                id: Date.now() + Math.random() // Unique ID for editing/deleting
+                id: Date.now() + Math.random()
             };
             links.unshift(newLink);
             currentUser.profileLinks.push(newLink);
@@ -703,12 +713,12 @@
         scene.add(globe);
         camera.position.z = 15;
 
-        function animate() {
-            requestAnimationFrame(animate);
+        function animateGlobe() {
+            requestAnimationFrame(animateGlobe);
             globe.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
-        animate();
+        animateGlobe();
 
         function spinGlobe() {
             let speed = 0.1;
@@ -718,6 +728,63 @@
                 if (speed < 0.01) clearInterval(spinInterval);
             }, 16);
         }
+
+        // Particle Wave Animation
+        const particleScene = new THREE.Scene();
+        const particleCamera = new THREE.PerspectiveCamera(75, 600 / 300, 0.1, 1000);
+        const particleRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        particleRenderer.setSize(600, 300);
+        document.getElementById('particleWaveContainer').appendChild(particleRenderer.domElement);
+
+        const particles = [];
+        const particleCount = 1000;
+        const gridSize = 20;
+        const geometryParticles = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount; i++) {
+            const x = (i % gridSize) - gridSize / 2;
+            const z = Math.floor(i / gridSize) - gridSize / 2;
+            const y = 0;
+            positions[i * 3] = x;
+            positions[i * 3 + 1] = y;
+            positions[i * 3 + 2] = z;
+            colors[i * 3] = 0;
+            colors[i * 3 + 1] = 1;
+            colors[i * 3 + 2] = 1;
+            particles.push({ x, y, z, baseY: y });
+        }
+
+        geometryParticles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometryParticles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        const materialParticles = new THREE.PointsMaterial({ size: 0.2, vertexColors: true });
+        const particleSystem = new THREE.Points(geometryParticles, materialParticles);
+        particleScene.add(particleSystem);
+
+        particleCamera.position.z = 15;
+
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        function animateParticles() {
+            requestAnimationFrame(animateParticles);
+            const positions = particleSystem.geometry.attributes.position.array;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = particles[i];
+                const distX = particle.x - mouseX * 10;
+                const distZ = particle.z - mouseY * 10;
+                const distance = Math.sqrt(distX * distX + distZ * distZ);
+                particle.y = Math.sin(Date.now() * 0.001 + distance * 0.2) * 2;
+                positions[i * 3 + 1] = particle.y;
+            }
+            particleSystem.geometry.attributes.position.needsUpdate = true;
+            particleRenderer.render(particleScene, particleCamera);
+        }
+        animateParticles();
     </script>
 </body>
 </html>
