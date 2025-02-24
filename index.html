@@ -109,8 +109,8 @@
         }
         #globeContainer { 
             width: 100%; 
-            max-width: 300px; 
-            height: 300px; 
+            max-width: 150px; /* Halved from 300px */
+            height: 150px; /* Halved from 300px */
             margin: 0 auto; 
         }
         #linkInputContainer {
@@ -402,8 +402,8 @@
         }
         #animationContainer {
             width: 100%;
-            max-width: 600px;
-            height: clamp(100px, 20vw, 150px);
+            max-width: 300px; /* Halved from 600px */
+            height: clamp(100px, 20vw, 150px); /* Halved height from 300px */
             margin: 2rem auto;
             position: relative;
             z-index: 1;
@@ -421,12 +421,21 @@
             0% { transform: translate(0, 0); opacity: 0.8; }
             100% { transform: translate(100%, 100%) rotate(360deg); opacity: 0; }
         }
+        @keyframes orbit {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
         @media (max-width: 600px) {
             #linkInputContainer { flex-direction: column; }
             input[type="text"], input[type="number"], input[type="password"] { width: 100%; max-width: none; }
             button { width: 100%; max-width: 300px; }
             .feed { padding: 0.5rem; }
-            #globeContainer { max-width: 200px; height: 200px; }
+            #globeContainer { max-width: 150px; height: 150px; } /* Reduced for mobile */
+            #animationContainer { max-width: 150px; height: clamp(50px, 15vw, 75px); } /* Reduced for mobile */
             .profile-pic { width: 40px; height: 40px; }
         }
     </style>
@@ -479,12 +488,6 @@
         </div>
         <button id="infoBtn" onclick="showInfo()" data-tooltip="App information">ℹ️ Info</button>
         <button id="installBtn" onclick="installPWA()" data-tooltip="Add Tc App to your device">Install App 📲</button>
-        <div id="infoPopup">
-            <h3>Tc App</h3>
-            <p>A decentralized social platform with blockchain integration! Share links, earn Troanary Tokens, and connect with family forever!</p>
-            <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
-            <button onclick="hideInfo()">Close</button>
-        </div>
         <div id="animationContainer"></div>
     </main>
 
@@ -537,6 +540,7 @@
         let totalSupply = 1000 * 100;
         let deferredPrompt;
         let animationLoaded = false;
+        let globeLoaded = false;
 
         // Lazy Load Scripts
         function loadScript(url, callback) {
@@ -1006,20 +1010,19 @@
         }
 
         // Lazy Load Globe
-        let globeLoaded = false;
         function lazyLoadGlobe() {
             if (globeLoaded) return;
             loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () => {
                 const scene = new THREE.Scene();
-                const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
+                const camera = new THREE.PerspectiveCamera(75, 150 / 150, 0.1, 1000); // Adjusted aspect ratio for smaller size
                 const renderer = new THREE.WebGLRenderer({ antialias: true });
-                renderer.setSize(300, 300);
+                renderer.setSize(150, 150); // Halved from 300x300
                 document.getElementById('globeContainer').appendChild(renderer.domElement);
-                const geometry = new THREE.SphereGeometry(5, 32, 32);
+                const geometry = new THREE.SphereGeometry(2.5, 16, 16); // Simplified geometry for mobile
                 const material = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true });
                 const globe = new THREE.Mesh(geometry, material);
                 scene.add(globe);
-                camera.position.z = 15;
+                camera.position.z = 7.5; // Adjusted for smaller size
 
                 function animateGlobe() {
                     requestAnimationFrame(animateGlobe);
@@ -1040,98 +1043,81 @@
             });
         }
 
-        // Lazy Load Animation
-        let animationLoaded = false;
-        function lazyLoadAnimation() {
+        // Lazy Load Particle Wave
+        let particlesLoaded = false;
+        function lazyLoadParticles() {
             const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting && !animationLoaded && currentFeed !== 'family') {
-                        loadFeedAnimation(currentFeed);
-                        animationLoaded = true;
-                        observer.disconnect();
+                    if (entry.isIntersecting && !particlesLoaded && currentFeed !== 'family') {
+                        loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () => {
+                            const particleScene = new THREE.Scene();
+                            const particleCamera = new THREE.PerspectiveCamera(75, 300 / 150, 0.1, 1000); // Adjusted aspect ratio for smaller size
+                            const particleRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                            particleRenderer.setSize(300, 150); // Halved from 600x300
+                            document.getElementById('animationContainer').appendChild(particleRenderer.domElement);
+
+                            const particles = [];
+                            const particleCount = 500; // Reduced from 1000 for mobile performance
+                            const gridSize = 15; // Reduced grid size
+                            const geometryParticles = new THREE.BufferGeometry();
+                            const positions = new Float32Array(particleCount * 3);
+                            const colors = new Float32Array(particleCount * 3);
+
+                            for (let i = 0; i < particleCount; i++) {
+                                const x = (i % gridSize) - gridSize / 2;
+                                const z = Math.floor(i / gridSize) - gridSize / 2;
+                                const y = 0;
+                                positions[i * 3] = x * 0.5; // Smaller scale for mobile
+                                positions[i * 3 + 1] = y;
+                                positions[i * 3 + 2] = z * 0.5; // Smaller scale for mobile
+                                colors[i * 3] = 0;
+                                colors[i * 3 + 1] = 1;
+                                colors[i * 3 + 2] = 1;
+                                particles.push({ x, y, z, baseY: y });
+                            }
+
+                            geometryParticles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                            geometryParticles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                            const materialParticles = new THREE.PointsMaterial({ size: 0.1, vertexColors: true }); // Smaller size
+                            const particleSystem = new THREE.Points(geometryParticles, materialParticles);
+                            particleScene.add(particleSystem);
+
+                            particleCamera.position.z = 7.5; // Adjusted for smaller size
+
+                            let mouseX = 0, mouseY = 0;
+                            document.addEventListener('mousemove', (e) => {
+                                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                                mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+                            });
+                            // Touch support for mobile
+                            document.addEventListener('touchmove', (e) => {
+                                const touch = e.touches[0];
+                                mouseX = (touch.clientX / window.innerWidth) * 2 - 1;
+                                mouseY = -(touch.clientY / window.innerHeight) * 2 + 1;
+                            });
+
+                            function animateParticles() {
+                                requestAnimationFrame(animateParticles);
+                                const positions = particleSystem.geometry.attributes.position.array;
+                                for (let i = 0; i < particleCount; i++) {
+                                    const particle = particles[i];
+                                    const distX = particle.x - mouseX * 5; // Reduced influence for mobile
+                                    const distZ = particle.z - mouseY * 5; // Reduced influence for mobile
+                                    const distance = Math.sqrt(distX * distX + distZ * distZ);
+                                    particle.y = Math.sin(Date.now() * 0.001 + distance * 0.1) * 1; // Simplified wave for mobile
+                                    positions[i * 3 + 1] = particle.y;
+                                }
+                                particleSystem.geometry.attributes.position.needsUpdate = true;
+                                particleRenderer.render(particleScene, particleCamera);
+                            }
+                            animateParticles();
+                            particlesLoaded = true;
+                            observer.disconnect();
+                        });
                     }
                 });
             }, { threshold: 0.1 });
             observer.observe(document.getElementById('animationContainer'));
-        }
-
-        function loadFeedAnimation(feedType) {
-            const container = document.getElementById('animationContainer');
-            container.innerHTML = ''; // Clear previous animation
-            if (feedType === 'home') {
-                const particles = [];
-                const particleCount = 50; // Reduced for mobile performance
-                for (let i = 0; i < particleCount; i++) {
-                    const particle = document.createElement('div');
-                    particle.className = 'particle';
-                    particle.style.left = Math.random() * 100 + 'vw';
-                    particle.style.top = Math.random() * 100 + 'vh';
-                    container.appendChild(particle);
-                    particles.push(particle);
-                }
-            } else if (feedType === 'trending') {
-                // Orbiting Rings (CSS)
-                container.innerHTML = `
-                    <div style="position: relative; width: 100%; height: 100%;">
-                        <div style="position: absolute; width: 100px; height: 100px; border: 2px solid #00ffcc; border-radius: 50%; animation: orbit 3s infinite linear;"></div>
-                        <div style="position: absolute; width: 150px; height: 150px; border: 2px solid #ffd700; border-radius: 50%; animation: orbit 4s infinite linear;"></div>
-                        <div style="position: absolute; width: 200px; height: 200px; border: 2px solid #ff6b6b; border-radius: 50%; animation: orbit 5s infinite linear;"></div>
-                    </div>
-                `;
-            } else if (feedType === 'groups') {
-                // Magnetic Dot Grid (CSS)
-                container.innerHTML = `
-                    <div style="position: relative; width: 100%; height: 100%; display: flex; flex-wrap: wrap;">
-                        ${Array(20).fill().map(() => `
-                            <div style="width: 5%; height: 5%; background: #00ffcc; border-radius: 50%; margin: 2.5%; transition: transform 0.3s;"></div>
-                        `).join('')}
-                    </div>
-                `;
-                let dots = container.querySelectorAll('div');
-                document.addEventListener('mousemove', (e) => {
-                    dots.forEach(dot => {
-                        const rect = container.getBoundingClientRect();
-                        const dx = e.clientX - (rect.left + dot.offsetLeft + dot.offsetWidth / 2);
-                        const dy = e.clientY - (rect.top + dot.offsetTop + dot.offsetHeight / 2);
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        const force = Math.min(20, 100 / (distance + 1));
-                        dot.style.transform = `translate(${dx / force}px, ${dy / force}px)`;
-                    });
-                });
-                // Touch support for mobile
-                document.addEventListener('touchmove', (e) => {
-                    const touch = e.touches[0];
-                    dots.forEach(dot => {
-                        const rect = container.getBoundingClientRect();
-                        const dx = touch.clientX - (rect.left + dot.offsetLeft + dot.offsetWidth / 2);
-                        const dy = touch.clientY - (rect.top + dot.offsetTop + dot.offsetHeight / 2);
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        const force = Math.min(20, 100 / (distance + 1));
-                        dot.style.transform = `translate(${dx / force}px, ${dy / force}px)`;
-                    });
-                });
-            } else if (feedType === 'comedy') {
-                // Bouncing Emoji Animation (CSS)
-                container.innerHTML = `
-                    ${['😂', '😄', '🤣'].map(emoji => `
-                        <div style="position: absolute; font-size: 2rem; color: #ffd700; animation: bounce 2s infinite ease-in-out;">${emoji}</div>
-                    `).join('')}
-                `;
-                let emojis = container.querySelectorAll('div');
-                emojis.forEach((emoji, i) => {
-                    emoji.style.left = Math.random() * 100 + 'vw';
-                    emoji.style.top = Math.random() * 100 + 'vh';
-                });
-            }
-        }
-
-        @keyframes orbit {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
         }
 
         // Initial Load
@@ -1142,6 +1128,8 @@
             document.getElementById('mainScreen').style.display = 'block';
         }
         loadFamilyTree();
+        lazyLoadGlobe();
+        if (!isMobile()) lazyLoadParticles(); // Only load particles on non-mobile for now (can optimize further)
     </script>
 </body>
 </html>
