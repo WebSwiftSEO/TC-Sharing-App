@@ -89,4 +89,67 @@ Imagine a global social platform where:
     Earnings are based on contribution, not influence.
 
 This is the future Tc App envisions—a fair, happy global community where people, not profits, come first. 🌍💖
+
+Smart Contract (Solidity) for Dynamic Token Supply
+
+Below is a basic ERC-20 smart contract with dynamic supply logic (to be deployed on Ethereum or compatible blockchain):
+solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract TroanaryToken is ERC20, Ownable {
+    uint256 public totalMembers;
+
+    constructor() ERC20("TroanaryToken", "TCT") {
+        totalMembers = 1000;
+        _mint(msg.sender, totalMembers * 100 * 10**18); // Initial supply: 1000 members * 100 tokens
+    }
+
+    function adjustSupply(uint256 newMemberCount) public onlyOwner {
+        require(newMemberCount >= 0, "Invalid member count");
+        if (newMemberCount > totalMembers) {
+            uint256 amountToMint = (newMemberCount - totalMembers) * 100 * 10**18;
+            _mint(msg.sender, amountToMint);
+        } else if (newMemberCount < totalMembers) {
+            uint256 amountToBurn = (totalMembers - newMemberCount) * 100 * 10**18;
+            _burn(msg.sender, amountToBurn);
+        }
+        totalMembers = newMemberCount;
+    }
+}
+Changes & Features Added:
+
+    Native Sharing on Logo Click:
+        Added an event listener to the h1 logo that triggers navigator.share if available, otherwise falls back to a URL copy prompt.
+    Wallet Integration:
+        Added Web3.js via CDN.
+        Implemented connectWallet() to connect to MetaMask (or any Ethereum-compatible wallet).
+        Displays wallet balance in ETH (simulated for now; real token balance requires contract integration).
+    Dynamic Token Supply Algorithm:
+        Simulated client-side with adjustSupply() function mirroring the smart contract logic.
+        Updates totalSupply when users sign up or log out (become inactive).
+        Real implementation requires the smart contract above deployed on Ethereum.
+    UI Updates:
+        Added a "Connect Wallet" button above the search bar with a gradient style.
+        Updated tokenStats to show blockchain balance.
+
+What I Think:
+
+    Strengths:
+        The native sharing feature adds a modern, user-friendly way to promote the app, enhancing its social aspect.
+        Wallet integration lays a solid foundation for true decentralization, aligning with the app's vision.
+        The dynamic token supply concept is innovative and could create a self-balancing economy, though it needs careful tuning to avoid inflation/deflation issues.
+    Challenges:
+        Blockchain Choice: I used Ethereum for this example due to its widespread support (MetaMask, Web3.js) and ERC-20 standard. However, prefer Dogecoin, Bitcoin, or BSV, we'd need different libraries (e.g., bitcoinjs-lib for Bitcoin) and a custom token implementation, as they don't natively support smart contracts like Ethereum. Ethereum/Polygon/BSC are better suited for this use case due to smart contract capabilities.
+        Smart Contract: The provided contract is basic and needs security audits, gas optimization, and integration with the frontend (e.g., via Web3.js contract.methods.adjustSupply().send()).
+        User Experience: Wallet connection might intimidate non-crypto users; consider a fallback for non-Web3 browsers.
+    Next Steps:
+        Deploy the smart contract on a testnet (e.g., Ropsten) and integrate it with Web3.js to replace the simulation.
+        Add token transfer functionality (e.g., send Troanary Tokens via wallet).
+        Refine the UI for wallet status (e.g., disconnect option, better balance display).
+like to prioritize a specific blockchain or dive deeper into any feature!
+
 YliaC
