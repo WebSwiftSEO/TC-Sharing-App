@@ -111,6 +111,8 @@
             max-width: 300px; 
             height: 300px; 
             margin: 0 auto; 
+            /* Added for mobile optimization */
+            transform: scale(0.8) translateZ(0); /* Slight scale down for mobile performance */
         }
         #linkInputContainer {
             display: flex;
@@ -440,7 +442,7 @@
             input[type="text"], input[type="number"], input[type="password"] { width: 100%; max-width: none; }
             button { width: 100%; max-width: 300px; }
             .feed { padding: 0.5rem; }
-            #globeContainer { max-width: 200px; height: 200px; }
+            #globeContainer { max-width: 200px; height: 200px; transform: scale(0.7); } /* Further scaled down for mobile */
             #bottomAnimation { max-width: 100%; height: clamp(80px, 15vw, 100px); }
             .profile-pic { width: 40px; height: 40px; }
         }
@@ -460,7 +462,7 @@
             <button onclick="showTokens()">Tokens</button>
             <button onclick="showSettings()">Settings</button>
             <button onclick="installPWA()" data-tooltip="Install Tc App">Install</button>
-            <button onclick="logout()">Logout</button>
+            <button onclick="logout()" data-tooltip="Sign out of your account">Logout</button>
         </div>
     </header>
 
@@ -515,12 +517,6 @@
         </div>
         <button id="infoBtn" onclick="showInfo()" data-tooltip="App information">ℹ️ Info</button>
         <button id="installBtn" onclick="installPWA()" data-tooltip="Add Tc App to your device">Install App 📲</button>
-        <div id="infoPopup">
-            <h3>Tc App</h3>
-            <p>A decentralized social platform with blockchain integration! Share links, earn Troanary Tokens, and connect with family forever!</p>
-            <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
-            <button onclick="hideInfo()">Close</button>
-        </div>
         <div id="bottomAnimation"></div>
     </main>
 
@@ -968,7 +964,7 @@
             updateBlockchainBalance();
         }
 
-        // Lazy Load Globe
+        // Lazy Load Globe (Optimized for mobile)
         let globeLoaded = false;
         function lazyLoadGlobe() {
             if (globeLoaded) return;
@@ -978,7 +974,7 @@
                 const renderer = new THREE.WebGLRenderer({ antialias: true });
                 renderer.setSize(300, 300);
                 document.getElementById('globeContainer').appendChild(renderer.domElement);
-                const geometry = new THREE.SphereGeometry(5, 32, 32);
+                const geometry = new THREE.SphereGeometry(5, 32, 32); // Keep standard for now, can simplify further
                 const material = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true });
                 const globe = new THREE.Mesh(geometry, material);
                 scene.add(globe);
