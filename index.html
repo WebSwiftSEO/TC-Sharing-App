@@ -337,6 +337,10 @@
             position: relative; 
             z-index: 1; 
         }
+        #installBtn {
+            margin-top: 1rem;
+            background: linear-gradient(45deg, #00ffcc, #4ecdc4);
+        }
         @media (max-width: 600px) {
             #linkInputContainer { flex-direction: column; }
             input[type="text"], input[type="number"], input[type="password"] { width: 100%; max-width: none; }
@@ -359,7 +363,7 @@
             <button onclick="showFeed('comedy')">Comedy</button>
             <button onclick="showTokens()">Tokens</button>
             <button onclick="showSettings()">Settings</button>
-            <button onclick="showInstall()">Install</button>
+            <button onclick="installPWA()" data-tooltip="Install Tc App">Install</button>
             <button onclick="logout()">Logout</button>
         </div>
     </header>
@@ -401,6 +405,7 @@
             <div id="linksContainer"></div>
         </div>
         <button id="infoBtn" onclick="showInfo()" data-tooltip="App information">ℹ️ Info</button>
+        <button id="installBtn" onclick="installPWA()" data-tooltip="Add Tc App to your device">Install App 📲</button>
         <div id="infoPopup">
             <h3>Tc App</h3>
             <p>A decentralized social platform with blockchain integration! Share links, earn Troanary Tokens, and connect with others!</p>
@@ -434,6 +439,7 @@
         let web3;
         let accounts = [];
         let totalSupply = 1000 * 100;
+        let deferredPrompt;
 
         // Lazy Load Scripts
         function loadScript(url, callback) {
@@ -451,11 +457,28 @@
                 .catch(err => console.error('Service worker failed:', err));
         }
 
-        let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
+            console.log('Install prompt captured');
         });
+
+        // Install PWA Function
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(choice => {
+                    if (choice.outcome === 'accepted') {
+                        console.log('PWA installed successfully');
+                    } else {
+                        console.log('PWA installation declined');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                alert('Install option not available. Ensure your browser supports PWA installation (e.g., Chrome, Edge, Safari) and you\'re not already installed.');
+            }
+        }
 
         // Native Sharing on Logo Click
         document.getElementById('shareLogo').addEventListener('click', () => {
@@ -583,16 +606,6 @@
             showFeed('home');
             lazyLoadGlobe();
             lazyLoadParticles();
-        }
-
-        function showInstall() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(choice => {
-                    if (choice.outcome === 'accepted') console.log('PWA installed');
-                    deferredPrompt = null;
-                });
-            }
         }
 
         // Feed Navigation
