@@ -7,8 +7,6 @@
     <meta name="description" content="Tc App - Decentralized Social and Crypto Platform">
     <meta name="keywords" content="Tc App, Troanary, Crypto, Social Media, Troanary Coin">
     <title>Tc App - Troanary Connection</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
     <link rel="manifest" href="./manifest.json">
     <style>
         body { 
@@ -32,12 +30,16 @@
             color: #fff; 
             padding: 1rem; 
             border-bottom: 2px solid #00ffcc; 
-            position: relative; 
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
             text-align: center; 
+            z-index: 200; 
+            box-sizing: border-box; 
         }
         header h1 { 
             animation: pulse 2s infinite alternate; 
-            font-size: 2rem; 
+            font-size: clamp(1.5rem, 4vw, 2rem); 
             margin: 0; 
             display: inline; 
             cursor: pointer; 
@@ -53,19 +55,20 @@
             background: none; 
             border: none; 
             color: #00ffcc; 
-            font-size: 1.5rem; 
+            font-size: clamp(1.2rem, 3vw, 1.5rem); 
             cursor: pointer; 
         }
         #menu { 
             display: none; 
             position: absolute; 
-            top: 3.5rem; 
+            top: 3rem; 
             right: 1rem; 
             background: #1a1a1a; 
             border: 1px solid #00ffcc; 
             border-radius: 5px; 
             padding: 0.5rem; 
             z-index: 100; 
+            max-width: 90vw; 
         }
         #menu button { 
             display: block; 
@@ -76,27 +79,30 @@
             color: #00ffcc; 
             padding: 0.5rem; 
             cursor: pointer; 
+            font-size: clamp(0.9rem, 2.5vw, 1rem); 
         }
         #menu button:hover { 
             color: #ffd700; 
         }
         main { 
-            padding: 1rem; 
+            padding: 5rem 1rem 1rem; 
             text-align: center; 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: center; 
+            justify-content: flex-start; 
+            box-sizing: border-box; 
         }
         .feed { 
-            margin-top: 1rem; 
+            margin: 1rem 0; 
             padding: 1rem; 
             background-color: #1a1a1a; 
             border-radius: 8px; 
             box-shadow: 0 2px 10px rgba(0, 255, 204, 0.5); 
             width: 90%; 
             max-width: 600px; 
+            box-sizing: border-box; 
         }
         #globeContainer { 
             width: 100%; 
@@ -111,6 +117,8 @@
             width: 100%;
             max-width: 600px;
             margin: 0.5rem 0;
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
         input[type="text"], input[type="number"], input[type="password"] { 
             width: 80%; 
@@ -120,7 +128,9 @@
             border: 1px solid #00ffcc; 
             background-color: #333; 
             color: #e0e0e0; 
-            margin: 0 0.5rem 0 0; 
+            margin: 0; 
+            box-sizing: border-box; 
+            font-size: clamp(0.9rem, 2.5vw, 1rem); 
         }
         button { 
             cursor: pointer; 
@@ -131,6 +141,7 @@
             color: #0d0d0d; 
             transition: background-color 0.3s, transform 0.2s; 
             position: relative; 
+            font-size: clamp(0.9rem, 2.5vw, 1rem); 
         }
         button:hover { 
             background-color: #ffd700; 
@@ -159,11 +170,13 @@
             flex-direction: column; 
             align-items: flex-start; 
             width: 100%; 
+            box-sizing: border-box; 
         }
         .link-item a { 
             color: #00ffcc; 
             text-decoration: none; 
             word-break: break-all; 
+            font-size: clamp(0.9rem, 2.5vw, 1rem); 
         }
         .link-item img { 
             max-width: 100%; 
@@ -173,11 +186,14 @@
         }
         .link-item .reactions { 
             margin-top: 0.5rem; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 0.3rem; 
         }
         .link-item button { 
-            margin: 0.3rem; 
+            margin: 0; 
             padding: 0.3rem 0.6rem; 
-            font-size: 0.9rem; 
+            font-size: clamp(0.8rem, 2vw, 0.9rem); 
         }
         #authScreen, #mainScreen { 
             transition: opacity 0.3s; 
@@ -190,6 +206,7 @@
             color: #00ffcc; 
             cursor: pointer; 
             margin-top: 0.5rem; 
+            font-size: clamp(0.9rem, 2.5vw, 1rem); 
         }
         .auth-toggle:hover { 
             color: #ffd700; 
@@ -206,15 +223,17 @@
             border-radius: 5px; 
             z-index: 1000; 
             max-width: 80%; 
+            box-sizing: border-box; 
         }
         .tab-buttons { 
             display: flex; 
             justify-content: center; 
             margin: 1rem 0; 
             flex-wrap: wrap; 
+            gap: 0.5rem; 
         }
         .tab-buttons button { 
-            margin: 0.5rem; 
+            margin: 0; 
         }
         #tWheel { 
             margin: 1rem 0; 
@@ -222,7 +241,7 @@
         }
         #searchContainer { 
             position: fixed; 
-            bottom: 4rem; 
+            bottom: clamp(4rem, 10vh, 5rem); 
             left: 0; 
             width: 100%; 
             padding: 0.5rem; 
@@ -233,6 +252,7 @@
             align-items: center; 
             backdrop-filter: blur(5px); 
             z-index: 100; 
+            box-sizing: border-box; 
         }
         #searchInput { 
             width: 70%; 
@@ -244,6 +264,8 @@
             color: #00ffcc; 
             box-shadow: 0 0 10px rgba(0, 255, 204, 0.5); 
             transition: all 0.3s; 
+            box-sizing: border-box; 
+            font-size: clamp(0.9rem, 2.5vw, 1rem); 
         }
         #searchInput:focus { 
             outline: none; 
@@ -258,6 +280,7 @@
             color: #0d0d0d; 
             font-weight: bold; 
             box-shadow: 0 0 10px rgba(0, 255, 204, 0.5); 
+            box-sizing: border-box; 
         }
         #searchBtn:hover { 
             transform: scale(1.05); 
@@ -265,9 +288,10 @@
         }
         #walletContainer { 
             position: fixed; 
-            bottom: 8rem; 
+            bottom: clamp(8rem, 20vh, 10rem); 
             width: 100%; 
             text-align: center; 
+            z-index: 100; 
         }
         #connectWalletBtn { 
             background: linear-gradient(45deg, #ff6b6b, #4ecdc4); 
@@ -288,12 +312,13 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            gap: 1rem; 
+            gap: clamp(0.5rem, 2vw, 1rem); 
             border-top: 1px solid #00ffcc; 
             z-index: 100; 
+            box-sizing: border-box; 
         }
         .social-icon { 
-            font-size: 1.5rem; 
+            font-size: clamp(1.2rem, 3vw, 1.5rem); 
             color: #00ffcc; 
             text-decoration: none; 
             transition: all 0.3s; 
@@ -307,10 +332,18 @@
         #particleWaveContainer { 
             width: 100%; 
             max-width: 600px; 
-            height: 300px; 
+            height: clamp(200px, 50vw, 300px); 
             margin: 2rem auto; 
             position: relative; 
             z-index: 1; 
+        }
+        @media (max-width: 600px) {
+            #linkInputContainer { flex-direction: column; }
+            input[type="text"], input[type="number"], input[type="password"] { width: 100%; max-width: none; }
+            button { width: 100%; max-width: 300px; }
+            .feed { padding: 0.5rem; }
+            #globeContainer { max-width: 200px; height: 200px; }
+            #particleWaveContainer { max-width: 100%; }
         }
     </style>
 </head>
@@ -374,7 +407,6 @@
             <p>Connect your wallet, react with ❤️🚫🤔, spin the T-Wheel, and explore feeds!</p>
             <button onclick="hideInfo()">Close</button>
         </div>
-        <!-- Particle Wave Animation -->
         <div id="particleWaveContainer"></div>
     </main>
 
@@ -402,6 +434,15 @@
         let web3;
         let accounts = [];
         let totalSupply = 1000 * 100;
+
+        // Lazy Load Scripts
+        function loadScript(url, callback) {
+            const script = document.createElement('script');
+            script.src = url;
+            script.async = true;
+            script.onload = callback;
+            document.head.appendChild(script);
+        }
 
         // PWA Setup
         if ('serviceWorker' in navigator) {
@@ -431,7 +472,17 @@
         });
 
         // Wallet Integration
-        async function connectWallet() {
+        function connectWallet() {
+            if (!window.ethereum && !web3) {
+                loadScript('https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js', async () => {
+                    await connectWalletLogic();
+                });
+            } else {
+                connectWalletLogic();
+            }
+        }
+
+        async function connectWalletLogic() {
             if (window.ethereum) {
                 web3 = new Web3(window.ethereum);
                 try {
@@ -530,6 +581,8 @@
             document.getElementById('mainScreen').classList.remove('hidden');
             updateTokenStats();
             showFeed('home');
+            lazyLoadGlobe();
+            lazyLoadParticles();
         }
 
         function showInstall() {
@@ -701,90 +754,111 @@
             updateBlockchainBalance();
         }
 
-        // Original 3D Globe
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(300, 300);
-        document.getElementById('globeContainer').appendChild(renderer.domElement);
-        const geometry = new THREE.SphereGeometry(5, 32, 32);
-        const material = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true });
-        const globe = new THREE.Mesh(geometry, material);
-        scene.add(globe);
-        camera.position.z = 15;
+        // Lazy Load Globe
+        let globeLoaded = false;
+        function lazyLoadGlobe() {
+            if (globeLoaded) return;
+            loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () => {
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, 300 / 300, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(300, 300);
+                document.getElementById('globeContainer').appendChild(renderer.domElement);
+                const geometry = new THREE.SphereGeometry(5, 32, 32);
+                const material = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true });
+                const globe = new THREE.Mesh(geometry, material);
+                scene.add(globe);
+                camera.position.z = 15;
 
-        function animateGlobe() {
-            requestAnimationFrame(animateGlobe);
-            globe.rotation.y += 0.01;
-            renderer.render(scene, camera);
-        }
-        animateGlobe();
+                function animateGlobe() {
+                    requestAnimationFrame(animateGlobe);
+                    globe.rotation.y += 0.01;
+                    renderer.render(scene, camera);
+                }
+                animateGlobe();
 
-        function spinGlobe() {
-            let speed = 0.1;
-            const spinInterval = setInterval(() => {
-                globe.rotation.y += speed;
-                speed *= 0.95;
-                if (speed < 0.01) clearInterval(spinInterval);
-            }, 16);
-        }
-
-        // Particle Wave Animation
-        const particleScene = new THREE.Scene();
-        const particleCamera = new THREE.PerspectiveCamera(75, 600 / 300, 0.1, 1000);
-        const particleRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        particleRenderer.setSize(600, 300);
-        document.getElementById('particleWaveContainer').appendChild(particleRenderer.domElement);
-
-        const particles = [];
-        const particleCount = 1000;
-        const gridSize = 20;
-        const geometryParticles = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-
-        for (let i = 0; i < particleCount; i++) {
-            const x = (i % gridSize) - gridSize / 2;
-            const z = Math.floor(i / gridSize) - gridSize / 2;
-            const y = 0;
-            positions[i * 3] = x;
-            positions[i * 3 + 1] = y;
-            positions[i * 3 + 2] = z;
-            colors[i * 3] = 0;
-            colors[i * 3 + 1] = 1;
-            colors[i * 3 + 2] = 1;
-            particles.push({ x, y, z, baseY: y });
+                window.spinGlobe = function() {
+                    let speed = 0.1;
+                    const spinInterval = setInterval(() => {
+                        globe.rotation.y += speed;
+                        speed *= 0.95;
+                        if (speed < 0.01) clearInterval(spinInterval);
+                    }, 16);
+                };
+                globeLoaded = true;
+            });
         }
 
-        geometryParticles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometryParticles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        const materialParticles = new THREE.PointsMaterial({ size: 0.2, vertexColors: true });
-        const particleSystem = new THREE.Points(geometryParticles, materialParticles);
-        particleScene.add(particleSystem);
+        // Lazy Load Particle Wave
+        let particlesLoaded = false;
+        function lazyLoadParticles() {
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !particlesLoaded) {
+                        loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () => {
+                            const particleScene = new THREE.Scene();
+                            const particleCamera = new THREE.PerspectiveCamera(75, 600 / 300, 0.1, 1000);
+                            const particleRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                            particleRenderer.setSize(600, 300);
+                            document.getElementById('particleWaveContainer').appendChild(particleRenderer.domElement);
 
-        particleCamera.position.z = 15;
+                            const particles = [];
+                            const particleCount = 1000;
+                            const gridSize = 20;
+                            const geometryParticles = new THREE.BufferGeometry();
+                            const positions = new Float32Array(particleCount * 3);
+                            const colors = new Float32Array(particleCount * 3);
 
-        let mouseX = 0, mouseY = 0;
-        document.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-        });
+                            for (let i = 0; i < particleCount; i++) {
+                                const x = (i % gridSize) - gridSize / 2;
+                                const z = Math.floor(i / gridSize) - gridSize / 2;
+                                const y = 0;
+                                positions[i * 3] = x;
+                                positions[i * 3 + 1] = y;
+                                positions[i * 3 + 2] = z;
+                                colors[i * 3] = 0;
+                                colors[i * 3 + 1] = 1;
+                                colors[i * 3 + 2] = 1;
+                                particles.push({ x, y, z, baseY: y });
+                            }
 
-        function animateParticles() {
-            requestAnimationFrame(animateParticles);
-            const positions = particleSystem.geometry.attributes.position.array;
-            for (let i = 0; i < particleCount; i++) {
-                const particle = particles[i];
-                const distX = particle.x - mouseX * 10;
-                const distZ = particle.z - mouseY * 10;
-                const distance = Math.sqrt(distX * distX + distZ * distZ);
-                particle.y = Math.sin(Date.now() * 0.001 + distance * 0.2) * 2;
-                positions[i * 3 + 1] = particle.y;
-            }
-            particleSystem.geometry.attributes.position.needsUpdate = true;
-            particleRenderer.render(particleScene, particleCamera);
+                            geometryParticles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                            geometryParticles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                            const materialParticles = new THREE.PointsMaterial({ size: 0.2, vertexColors: true });
+                            const particleSystem = new THREE.Points(geometryParticles, materialParticles);
+                            particleScene.add(particleSystem);
+
+                            particleCamera.position.z = 15;
+
+                            let mouseX = 0, mouseY = 0;
+                            document.addEventListener('mousemove', (e) => {
+                                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                                mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+                            });
+
+                            function animateParticles() {
+                                requestAnimationFrame(animateParticles);
+                                const positions = particleSystem.geometry.attributes.position.array;
+                                for (let i = 0; i < particleCount; i++) {
+                                    const particle = particles[i];
+                                    const distX = particle.x - mouseX * 10;
+                                    const distZ = particle.z - mouseY * 10;
+                                    const distance = Math.sqrt(distX * distX + distZ * distZ);
+                                    particle.y = Math.sin(Date.now() * 0.001 + distance * 0.2) * 2;
+                                    positions[i * 3 + 1] = particle.y;
+                                }
+                                particleSystem.geometry.attributes.position.needsUpdate = true;
+                                particleRenderer.render(particleScene, particleCamera);
+                            }
+                            animateParticles();
+                            particlesLoaded = true;
+                            observer.disconnect();
+                        });
+                    }
+                });
+            }, { threshold: 0.1 });
+            observer.observe(document.getElementById('particleWaveContainer'));
         }
-        animateParticles();
     </script>
 </body>
 </html>
