@@ -1,7 +1,7 @@
 {
   "name": "Tc App - Troanary Connection",
   "short_name": "Tc App",
-  "start_url": "/",
+  "start_url": "https://webswiftseo.github.io/TC-Sharing-App/",
   "display": "standalone",
   "background_color": "#0d0d0d",
   "theme_color": "#00ffcc",
