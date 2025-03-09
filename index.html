@@ -662,6 +662,14 @@
         });
 
         function installPWA() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            
+            if (isIOS && isSafari) {
+                alert("To install the Tc App on iPhone/iPad:\n\n1. Open Safari\n2. Tap the 'Share' button (🔄)\n3. Select 'Add to Home Screen' 📲");
+                return;
+            }
+        
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then(choice => {
@@ -673,9 +681,10 @@
                     deferredPrompt = null;
                 });
             } else {
-                alert('Install option not available. Ensure your browser supports PWA installation.');
+                alert("Install option not available. Ensure your browser supports PWA installation.");
             }
         }
+
 
         document.getElementById('shareLogo').addEventListener('click', () => {
             if (navigator.share) {
