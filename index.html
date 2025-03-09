@@ -445,12 +445,11 @@
             #bottomAnimation { max-width: 100%; height: clamp(80px, 15vw, 100px); }
             .profile-pic { width: 40px; height: 40px; }
         }
-       .container {
-    display: flex;
-    justify-content: center;  /* Centers horizontally */
-    align-items: center;  /* Centers vertically */
-    height: 100vh; /* Full viewport height */
-       }
+        #tokenStats {
+    margin-top: 4rem; /* Add spacing between globe and token stats */
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+    color: #e0e0e0;
+}
 
     </style>
 </head>
@@ -507,7 +506,6 @@
         </div>
         <div id="feed" class="feed">
             <div id="globeContainer"></div>
-            <br>
             <div id="tokenStats">Tokens: <span id="userTokens">0</span> | Active Users: <span id="activeUsers">1</span> | Blockchain Balance: <span id="blockchainBalance">0</span></div>
             <div id="linkInputContainer">
                 <input type="text" id="linkInput" placeholder="Share a link...">
