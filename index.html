@@ -589,9 +589,9 @@ Join the revolution and experience a social platform where your time, thoughts, 
         }
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./service-worker.js')
-                .then(reg => console.log('Service worker registered.', reg))
-                .catch(err => console.error('Service worker failed:', err));
+        navigator.serviceWorker.register('/TC-Sharing-App/service-worker.js', { scope: '/TC-Sharing-App/' })
+        .then(reg => console.log('Service worker registered.', reg))
+        .catch(err => console.error('Service worker failed:', err));
         }
 
         window.addEventListener('beforeinstallprompt', (e) => {
