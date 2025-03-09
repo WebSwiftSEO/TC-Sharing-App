@@ -451,7 +451,61 @@
     font-size: clamp(0.9rem, 2.5vw, 1rem);
     color: #e0e0e0;
 }
+    .expanding-text-box {
+        width: 90%;
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 15px;
+        background-color: rgba(26, 26, 26, 0.9);
+        border: 2px solid transparent;
+        border-image: linear-gradient(45deg, #00ffcc, #ffd700);
+        border-image-slice: 1;
+        border-radius: 10px;
+        color: #e0e0e0;
+        text-align: left;
+        box-shadow: 0 0 15px rgba(0, 255, 204, 0.7);
+        transition: all 0.3s ease-in-out;
+        cursor: pointer;
+        overflow: hidden;
+        height: 80px; /* Collapsed height */
+    }
 
+    .expanding-text-box.expanded {
+        height: auto;
+        max-height: 600px;
+        padding: 20px;
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 0 35px rgba(0, 255, 204, 0.8);
+    }
+
+    .expanding-text-box h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #00ffcc;
+    }
+
+    .expanding-text-box p, .expanding-text-box ul {
+        display: none; /* Hidden initially */
+        margin: 10px 0;
+    }
+
+    .expanding-text-box.expanded p,
+    .expanding-text-box.expanded ul {
+        display: block; /* Show when expanded */
+    }
+
+    .expanding-text-box ul {
+        padding-left: 20px;
+    }
+
+    .expanding-text-box li {
+        margin-bottom: 8px;
+        list-style: none;
+    }
+
+    .expanding-text-box li::before {
+        content: "✔️ ";
+        color: #ffd700;
+    }
 
     </style>
 </head>
@@ -527,30 +581,37 @@
         <button id="infoBtn" onclick="showInfo()" data-tooltip="App information">ℹ️ Info</button>
         <div id="infoPopup">
         <h3>About Tc App</h3>
-        <p>### **Tc App - The Future of Decentralized Social and Crypto Sharing** 🚀🔗  
-
-Tc 'DEMO' App is a cutting-edge example of how a decentralized social and crypto platform built to empower users with complete freedom over their digital interactions. Unlike traditional social networks that manipulate reach and engagement through profit-driven algorithms, Tc App prioritizes authenticity, transparency, and user control.  
-
-Powered by Troanary Coin (Tc), the platform seamlessly integrates **social networking, tokenized rewards, and decentralized finance (DeFi)** into a single, intuitive experience. Whether you're sharing knowledge, connecting with like-minded individuals, or exploring the latest trends, Tc App ensures that your contributions are valued and rewarded.  
-
-### 🔥 Key Features of Tc App  
-✔️ Decentralized & Censorship-Resistant – No corporate interference, no data mining, and no algorithmic manipulation.  
-✔️ Crypto Wallet Integration – Easily send, receive, and manage multiple cryptocurrencies within the app.  
-✔️ Tokenized Rewards System – Earn **Troanary Coins (Tc)** by engaging, reacting, and sharing valuable content.  
-✔️ P2P Link Sharing – Share content freely without worrying about artificial reach restrictions.  
-✔️ Groups & Communities – Connect with people who share your interests in a meaningful way.  
-✔️ Lightweight & Fast – Optimized for speed, efficiency, and seamless interaction across all devices.  
-✔️ Decentralized Finance (DeFi) Support – Access staking, swaps, and future blockchain innovations directly from Tc App.  
-
-### Why Choose Tc App?  
-Unlike mainstream social platforms that exploit user data for ad revenue, **Tc App is designed for the people, by the people**. Every post, reaction, and interaction contributes to a growing decentralized economy where users are fairly rewarded for their participation. With no centralized authority controlling the flow of information, Tc App restores true digital freedom.  
-
-Join the revolution and experience a social platform where your time, thoughts, and contributions truly matter. 🚀🔗💎</p>
+        <p>🚀🔗 Tc 'DEMO' App is a cutting-edge example of how a decentralized social and crypto platform built to empower users with complete freedom over their digital interactions. Clone the code on Github and start building it into a super speacial app anytime.🚀🔗💎</p>
         <button onclick="hideInfo()">Close</button>
         </div>
 
         <button id="installBtn" onclick="installPWA()" data-tooltip="Add Tc App to your device">Install App 📲</button>
         <div id="bottomAnimation"></div>
+        
+
+        <div class="expanding-text-box" onclick="toggleExpand(this)">
+        <h2>📢 Tc Sharing App (Demo) - Click to Expand</h2>
+        <p>Unlike traditional social networks that manipulate reach and engagement through profit-driven algorithms, <b>Tc App</b> prioritizes authenticity, transparency, and user control.</p>
+    
+        <p>Powered by <b>Troanary Coin (Tc)</b>, the platform seamlessly integrates <b>social networking, tokenized rewards, and decentralized finance (DeFi)</b> into a single, intuitive experience.</p>
+    
+        <h2>🔥 Key Features</h2>
+        <ul>
+        <li>Decentralized & Censorship-Resistant – No corporate control, no data mining.</li>
+        <li>Crypto Wallet Integration – Send, receive, and manage multiple cryptocurrencies.</li>
+        <li>Tokenized Rewards System – Earn <b>Troanary Coins (Tc)</b> for valuable content.</li>
+        <li>P2P Link Sharing – No algorithmic reach restrictions.</li>
+        <li>Groups & Communities – Meaningful connections based on interests.</li>
+        <li>Lightweight & Fast – Optimized for efficiency across all devices.</li>
+        <li>Decentralized Finance (DeFi) Support – Direct access to blockchain innovations.</li>
+        </ul>
+    
+        <h2>Why Choose Tc App?</h2>
+        <p>Unlike mainstream social platforms that exploit user data for ad revenue, <b>Tc App is designed for the people, by the people.</b> Your interactions contribute to a fair decentralized economy.</p>
+    
+        <p>💡 <b>Join the revolution and experience true digital freedom.</b></p>
+    </div>
+
          <img src="icon-512.png" alt="Tc Sharing App Troanary Coin Blockchain" class="center"> 
     </main>
 
@@ -1067,6 +1128,9 @@ Join the revolution and experience a social platform where your time, thoughts, 
         showFeed('home');
         lazyLoadGlobe();
         
+        function toggleExpand(element) {
+        element.classList.toggle("expanded");
+    }
 
     </script>
 </body>
